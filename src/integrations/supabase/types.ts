@@ -38,6 +38,95 @@ export type Database = {
         }
         Relationships: []
       }
+      discovery_preferences: {
+        Row: {
+          children_filter:
+            | Database["public"]["Enums"]["children_status"][]
+            | null
+          created_at: string
+          drinking_filter:
+            | Database["public"]["Enums"]["drinking_status"][]
+            | null
+          education_filter:
+            | Database["public"]["Enums"]["education_level"][]
+            | null
+          gender_preference: Database["public"]["Enums"]["gender_type"][] | null
+          height_max_cm: number | null
+          height_min_cm: number | null
+          id: string
+          max_age: number | null
+          max_distance_km: number | null
+          min_age: number | null
+          relationship_intent_filter:
+            | Database["public"]["Enums"]["relationship_intent"][]
+            | null
+          show_verified_only: boolean | null
+          smoking_filter: Database["public"]["Enums"]["smoking_status"][] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          children_filter?:
+            | Database["public"]["Enums"]["children_status"][]
+            | null
+          created_at?: string
+          drinking_filter?:
+            | Database["public"]["Enums"]["drinking_status"][]
+            | null
+          education_filter?:
+            | Database["public"]["Enums"]["education_level"][]
+            | null
+          gender_preference?:
+            | Database["public"]["Enums"]["gender_type"][]
+            | null
+          height_max_cm?: number | null
+          height_min_cm?: number | null
+          id?: string
+          max_age?: number | null
+          max_distance_km?: number | null
+          min_age?: number | null
+          relationship_intent_filter?:
+            | Database["public"]["Enums"]["relationship_intent"][]
+            | null
+          show_verified_only?: boolean | null
+          smoking_filter?:
+            | Database["public"]["Enums"]["smoking_status"][]
+            | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          children_filter?:
+            | Database["public"]["Enums"]["children_status"][]
+            | null
+          created_at?: string
+          drinking_filter?:
+            | Database["public"]["Enums"]["drinking_status"][]
+            | null
+          education_filter?:
+            | Database["public"]["Enums"]["education_level"][]
+            | null
+          gender_preference?:
+            | Database["public"]["Enums"]["gender_type"][]
+            | null
+          height_max_cm?: number | null
+          height_min_cm?: number | null
+          id?: string
+          max_age?: number | null
+          max_distance_km?: number | null
+          min_age?: number | null
+          relationship_intent_filter?:
+            | Database["public"]["Enums"]["relationship_intent"][]
+            | null
+          show_verified_only?: boolean | null
+          smoking_filter?:
+            | Database["public"]["Enums"]["smoking_status"][]
+            | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       interests: {
         Row: {
           category: string | null
@@ -195,69 +284,227 @@ export type Database = {
           },
         ]
       }
+      profile_prompts: {
+        Row: {
+          created_at: string
+          display_order: number | null
+          id: string
+          profile_id: string
+          prompt_answer: string
+          prompt_question: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          profile_id: string
+          prompt_answer: string
+          prompt_question: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          profile_id?: string
+          prompt_answer?: string
+          prompt_question?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_prompts_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           bio: string | null
+          children: Database["public"]["Enums"]["children_status"] | null
           city: string | null
+          company: string | null
           created_at: string
           date_of_birth: string
+          deal_breakers: string[] | null
+          diet: Database["public"]["Enums"]["diet_type"] | null
           display_name: string
+          drinking: Database["public"]["Enums"]["drinking_status"] | null
+          education: Database["public"]["Enums"]["education_level"] | null
           gender: Database["public"]["Enums"]["gender_type"]
+          height_cm: number | null
           id: string
+          is_online: boolean | null
           is_profile_complete: boolean | null
           is_verified: boolean | null
           is_visible: boolean | null
+          job_title: string | null
+          languages: string[] | null
           last_active: string | null
           latitude: number | null
           longitude: number | null
           looking_for: Database["public"]["Enums"]["gender_type"][] | null
+          love_language: Database["public"]["Enums"]["love_language"] | null
           max_age: number | null
           max_distance_km: number | null
           min_age: number | null
+          personality_type: string | null
+          pets: Database["public"]["Enums"]["pet_type"] | null
+          political_views: string | null
+          relationship_intent:
+            | Database["public"]["Enums"]["relationship_intent"][]
+            | null
+          relationship_status:
+            | Database["public"]["Enums"]["relationship_status"]
+            | null
+          religion: string | null
+          school: string | null
+          sexual_orientation: string | null
+          show_distance: boolean | null
+          show_online_status: boolean | null
+          show_political_views: boolean | null
+          show_religion: boolean | null
+          show_sexual_orientation: boolean | null
+          sleep_schedule: Database["public"]["Enums"]["sleep_schedule"] | null
+          smoking: Database["public"]["Enums"]["smoking_status"] | null
           updated_at: string
           user_id: string
+          workout: Database["public"]["Enums"]["workout_status"] | null
+          zodiac: Database["public"]["Enums"]["zodiac_sign"] | null
         }
         Insert: {
           bio?: string | null
+          children?: Database["public"]["Enums"]["children_status"] | null
           city?: string | null
+          company?: string | null
           created_at?: string
           date_of_birth: string
+          deal_breakers?: string[] | null
+          diet?: Database["public"]["Enums"]["diet_type"] | null
           display_name: string
+          drinking?: Database["public"]["Enums"]["drinking_status"] | null
+          education?: Database["public"]["Enums"]["education_level"] | null
           gender: Database["public"]["Enums"]["gender_type"]
+          height_cm?: number | null
           id?: string
+          is_online?: boolean | null
           is_profile_complete?: boolean | null
           is_verified?: boolean | null
           is_visible?: boolean | null
+          job_title?: string | null
+          languages?: string[] | null
           last_active?: string | null
           latitude?: number | null
           longitude?: number | null
           looking_for?: Database["public"]["Enums"]["gender_type"][] | null
+          love_language?: Database["public"]["Enums"]["love_language"] | null
           max_age?: number | null
           max_distance_km?: number | null
           min_age?: number | null
+          personality_type?: string | null
+          pets?: Database["public"]["Enums"]["pet_type"] | null
+          political_views?: string | null
+          relationship_intent?:
+            | Database["public"]["Enums"]["relationship_intent"][]
+            | null
+          relationship_status?:
+            | Database["public"]["Enums"]["relationship_status"]
+            | null
+          religion?: string | null
+          school?: string | null
+          sexual_orientation?: string | null
+          show_distance?: boolean | null
+          show_online_status?: boolean | null
+          show_political_views?: boolean | null
+          show_religion?: boolean | null
+          show_sexual_orientation?: boolean | null
+          sleep_schedule?: Database["public"]["Enums"]["sleep_schedule"] | null
+          smoking?: Database["public"]["Enums"]["smoking_status"] | null
           updated_at?: string
           user_id: string
+          workout?: Database["public"]["Enums"]["workout_status"] | null
+          zodiac?: Database["public"]["Enums"]["zodiac_sign"] | null
         }
         Update: {
           bio?: string | null
+          children?: Database["public"]["Enums"]["children_status"] | null
           city?: string | null
+          company?: string | null
           created_at?: string
           date_of_birth?: string
+          deal_breakers?: string[] | null
+          diet?: Database["public"]["Enums"]["diet_type"] | null
           display_name?: string
+          drinking?: Database["public"]["Enums"]["drinking_status"] | null
+          education?: Database["public"]["Enums"]["education_level"] | null
           gender?: Database["public"]["Enums"]["gender_type"]
+          height_cm?: number | null
           id?: string
+          is_online?: boolean | null
           is_profile_complete?: boolean | null
           is_verified?: boolean | null
           is_visible?: boolean | null
+          job_title?: string | null
+          languages?: string[] | null
           last_active?: string | null
           latitude?: number | null
           longitude?: number | null
           looking_for?: Database["public"]["Enums"]["gender_type"][] | null
+          love_language?: Database["public"]["Enums"]["love_language"] | null
           max_age?: number | null
           max_distance_km?: number | null
           min_age?: number | null
+          personality_type?: string | null
+          pets?: Database["public"]["Enums"]["pet_type"] | null
+          political_views?: string | null
+          relationship_intent?:
+            | Database["public"]["Enums"]["relationship_intent"][]
+            | null
+          relationship_status?:
+            | Database["public"]["Enums"]["relationship_status"]
+            | null
+          religion?: string | null
+          school?: string | null
+          sexual_orientation?: string | null
+          show_distance?: boolean | null
+          show_online_status?: boolean | null
+          show_political_views?: boolean | null
+          show_religion?: boolean | null
+          show_sexual_orientation?: boolean | null
+          sleep_schedule?: Database["public"]["Enums"]["sleep_schedule"] | null
+          smoking?: Database["public"]["Enums"]["smoking_status"] | null
           updated_at?: string
           user_id?: string
+          workout?: Database["public"]["Enums"]["workout_status"] | null
+          zodiac?: Database["public"]["Enums"]["zodiac_sign"] | null
+        }
+        Relationships: []
+      }
+      prompts: {
+        Row: {
+          category: string | null
+          created_at: string
+          id: string
+          is_active: boolean | null
+          question: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          question: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          question?: string
         }
         Relationships: []
       }
@@ -417,9 +664,54 @@ export type Database = {
     }
     Enums: {
       app_role: "user" | "admin"
+      children_status:
+        | "have_kids"
+        | "want_kids"
+        | "dont_want_kids"
+        | "open_to_kids"
+      diet_type: "omnivore" | "vegetarian" | "vegan" | "pescatarian" | "other"
+      drinking_status: "never" | "socially" | "often"
+      education_level:
+        | "high_school"
+        | "some_college"
+        | "bachelors"
+        | "masters"
+        | "doctorate"
+        | "trade_school"
+        | "other"
       gender_type: "male" | "female" | "non_binary" | "other"
+      love_language:
+        | "words_of_affirmation"
+        | "acts_of_service"
+        | "receiving_gifts"
+        | "quality_time"
+        | "physical_touch"
+      pet_type: "dog" | "cat" | "both" | "other" | "none"
+      relationship_intent:
+        | "long_term"
+        | "short_term"
+        | "casual"
+        | "friends"
+        | "figuring_out"
+      relationship_status: "single" | "divorced" | "widowed" | "separated"
+      sleep_schedule: "early_bird" | "night_owl" | "balanced"
+      smoking_status: "non_smoker" | "social_smoker" | "smoker"
       subscription_tier: "free" | "premium" | "premium_plus"
       swipe_type: "like" | "pass" | "super_like"
+      workout_status: "never" | "sometimes" | "often"
+      zodiac_sign:
+        | "aries"
+        | "taurus"
+        | "gemini"
+        | "cancer"
+        | "leo"
+        | "virgo"
+        | "libra"
+        | "scorpio"
+        | "sagittarius"
+        | "capricorn"
+        | "aquarius"
+        | "pisces"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -548,9 +840,59 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["user", "admin"],
+      children_status: [
+        "have_kids",
+        "want_kids",
+        "dont_want_kids",
+        "open_to_kids",
+      ],
+      diet_type: ["omnivore", "vegetarian", "vegan", "pescatarian", "other"],
+      drinking_status: ["never", "socially", "often"],
+      education_level: [
+        "high_school",
+        "some_college",
+        "bachelors",
+        "masters",
+        "doctorate",
+        "trade_school",
+        "other",
+      ],
       gender_type: ["male", "female", "non_binary", "other"],
+      love_language: [
+        "words_of_affirmation",
+        "acts_of_service",
+        "receiving_gifts",
+        "quality_time",
+        "physical_touch",
+      ],
+      pet_type: ["dog", "cat", "both", "other", "none"],
+      relationship_intent: [
+        "long_term",
+        "short_term",
+        "casual",
+        "friends",
+        "figuring_out",
+      ],
+      relationship_status: ["single", "divorced", "widowed", "separated"],
+      sleep_schedule: ["early_bird", "night_owl", "balanced"],
+      smoking_status: ["non_smoker", "social_smoker", "smoker"],
       subscription_tier: ["free", "premium", "premium_plus"],
       swipe_type: ["like", "pass", "super_like"],
+      workout_status: ["never", "sometimes", "often"],
+      zodiac_sign: [
+        "aries",
+        "taurus",
+        "gemini",
+        "cancer",
+        "leo",
+        "virgo",
+        "libra",
+        "scorpio",
+        "sagittarius",
+        "capricorn",
+        "aquarius",
+        "pisces",
+      ],
     },
   },
 } as const
