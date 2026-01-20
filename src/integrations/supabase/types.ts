@@ -213,6 +213,45 @@ export type Database = {
           },
         ]
       }
+      paystack_transactions: {
+        Row: {
+          amount: number
+          created_at: string | null
+          currency: string | null
+          id: string
+          paystack_response: Json | null
+          plan: string
+          reference: string
+          status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          paystack_response?: Json | null
+          plan: string
+          reference: string
+          status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          paystack_response?: Json | null
+          plan?: string
+          reference?: string
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profile_interests: {
         Row: {
           created_at: string
@@ -373,6 +412,11 @@ export type Database = {
           smoking: Database["public"]["Enums"]["smoking_status"] | null
           updated_at: string
           user_id: string
+          verification_photo_url: string | null
+          verification_reviewed_at: string | null
+          verification_reviewed_by: string | null
+          verification_status: string | null
+          verification_submitted_at: string | null
           workout: Database["public"]["Enums"]["workout_status"] | null
           zodiac: Database["public"]["Enums"]["zodiac_sign"] | null
         }
@@ -426,6 +470,11 @@ export type Database = {
           smoking?: Database["public"]["Enums"]["smoking_status"] | null
           updated_at?: string
           user_id: string
+          verification_photo_url?: string | null
+          verification_reviewed_at?: string | null
+          verification_reviewed_by?: string | null
+          verification_status?: string | null
+          verification_submitted_at?: string | null
           workout?: Database["public"]["Enums"]["workout_status"] | null
           zodiac?: Database["public"]["Enums"]["zodiac_sign"] | null
         }
@@ -479,6 +528,11 @@ export type Database = {
           smoking?: Database["public"]["Enums"]["smoking_status"] | null
           updated_at?: string
           user_id?: string
+          verification_photo_url?: string | null
+          verification_reviewed_at?: string | null
+          verification_reviewed_by?: string | null
+          verification_status?: string | null
+          verification_submitted_at?: string | null
           workout?: Database["public"]["Enums"]["workout_status"] | null
           zodiac?: Database["public"]["Enums"]["zodiac_sign"] | null
         }
@@ -549,9 +603,11 @@ export type Database = {
           created_at: string
           current_period_end: string | null
           current_period_start: string | null
+          daily_messages_remaining: number | null
           daily_swipes_remaining: number | null
           id: string
           is_active: boolean | null
+          last_message_reset: string | null
           last_swipe_reset: string | null
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
@@ -563,9 +619,11 @@ export type Database = {
           created_at?: string
           current_period_end?: string | null
           current_period_start?: string | null
+          daily_messages_remaining?: number | null
           daily_swipes_remaining?: number | null
           id?: string
           is_active?: boolean | null
+          last_message_reset?: string | null
           last_swipe_reset?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
@@ -577,9 +635,11 @@ export type Database = {
           created_at?: string
           current_period_end?: string | null
           current_period_start?: string | null
+          daily_messages_remaining?: number | null
           daily_swipes_remaining?: number | null
           id?: string
           is_active?: boolean | null
+          last_message_reset?: string | null
           last_swipe_reset?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
@@ -644,6 +704,11 @@ export type Database = {
         Returns: boolean
       }
       calculate_age: { Args: { dob: string }; Returns: number }
+      check_message_limit: { Args: { _user_id: string }; Returns: boolean }
+      decrement_message_count: {
+        Args: { _user_id: string }
+        Returns: undefined
+      }
       get_subscription_tier: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["subscription_tier"]
