@@ -1,18 +1,21 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, useMotionValue, useTransform, AnimatePresence, PanInfo } from "framer-motion";
-import { Heart, X, Star, RotateCcw, MapPin, Briefcase, Sparkles, GraduationCap, Ruler } from "lucide-react";
+import { Heart, X, Star, RotateCcw, MapPin, Briefcase, Sparkles, Ruler, MessageCircle, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ProfileWithPhotos, getDiscoverProfiles, createSwipe, lifestyleLabels, cmToFeetInches } from "@/lib/api";
+import { ProfileWithPhotos, getDiscoverProfiles, createSwipe, lifestyleLabels, cmToFeetInches, getSubscription } from "@/lib/api";
 import { toast } from "sonner";
 import MatchModal from "@/components/app/MatchModal";
+import { useNavigate } from "react-router-dom";
 
 const SwipeCard = ({
   profile,
   onSwipe,
+  onMessage,
   isTop,
 }: {
   profile: ProfileWithPhotos;
   onSwipe: (direction: 'left' | 'right' | 'up') => void;
+  onMessage: () => void;
   isTop: boolean;
 }) => {
   const x = useMotionValue(0);
@@ -305,13 +308,21 @@ const SwipeCard = ({
 };
 
 const Discover = () => {
+  const navigate = useNavigate();
   const [profiles, setProfiles] = useState<ProfileWithPhotos[]>([]);
   const [loading, setLoading] = useState(true);
   const [matchedProfile, setMatchedProfile] = useState<ProfileWithPhotos | null>(null);
+  const [subscription, setSubscription] = useState<{ tier: string } | null>(null);
 
   useEffect(() => {
     loadProfiles();
+    loadSubscription();
   }, []);
+
+  const loadSubscription = async () => {
+    const { data } = await getSubscription();
+    setSubscription(data);
+  };
 
   const loadProfiles = async () => {
     setLoading(true);
@@ -346,6 +357,16 @@ const Discover = () => {
     if (profiles.length <= 3) {
       loadProfiles();
     }
+  };
+
+  const handleMessage = () => {
+    // Premium Plus feature: Message before matching
+    if (subscription?.tier !== 'premium_plus') {
+      toast.error("Upgrade to Premium Plus to message before matching!");
+      navigate("/app/subscription");
+      return;
+    }
+    toast.info("This feature is coming soon!");
   };
 
   if (loading && profiles.length === 0) {
@@ -384,13 +405,14 @@ const Discover = () => {
   return (
     <div className="h-[calc(100vh-8rem)] flex flex-col items-center justify-center">
       {/* Card Stack */}
-      <div className="relative w-full flex-1 max-h-[70vh]">
+      <div className="relative w-full flex-1 max-h-[65vh]">
         <AnimatePresence>
           {profiles.slice(0, 3).map((profile, index) => (
             <SwipeCard
               key={profile.id}
               profile={profile}
               onSwipe={handleSwipe}
+              onMessage={handleMessage}
               isTop={index === 0}
             />
           ))}
@@ -398,30 +420,47 @@ const Discover = () => {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex items-center gap-4 py-4">
+      <div className="flex items-center gap-3 py-4">
+        {/* Dislike */}
         <Button
-          variant="pass"
-          size="iconLg"
+          variant="outline"
+          size="icon"
           onClick={() => handleSwipe('left')}
-          className="shadow-lg"
+          className="w-14 h-14 rounded-full shadow-lg border-destructive/30 hover:bg-destructive/10 hover:border-destructive"
         >
-          <X className="w-8 h-8" />
+          <X className="w-7 h-7 text-destructive" />
         </Button>
+
+        {/* Super Like */}
         <Button
-          variant="superlike"
-          size="iconXl"
+          variant="outline"
+          size="icon"
           onClick={() => handleSwipe('up')}
-          className="shadow-lg"
+          className="w-12 h-12 rounded-full shadow-lg border-superlike/30 hover:bg-superlike/10 hover:border-superlike"
         >
-          <Star className="w-8 h-8" />
+          <Star className="w-6 h-6 text-superlike" />
         </Button>
+
+        {/* Like */}
         <Button
-          variant="like"
-          size="iconLg"
+          size="icon"
           onClick={() => handleSwipe('right')}
-          className="shadow-lg"
+          className="w-16 h-16 rounded-full shadow-lg bg-gradient-primary hover:opacity-90"
         >
-          <Heart className="w-8 h-8" />
+          <Heart className="w-8 h-8 text-primary-foreground" />
+        </Button>
+
+        {/* Message (Premium Plus) */}
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={handleMessage}
+          className="w-12 h-12 rounded-full shadow-lg border-primary/30 hover:bg-primary/10 hover:border-primary relative"
+        >
+          <MessageCircle className="w-6 h-6 text-primary" />
+          {subscription?.tier !== 'premium_plus' && (
+            <Crown className="w-3 h-3 text-yellow-500 absolute -top-1 -right-1" />
+          )}
         </Button>
       </div>
 

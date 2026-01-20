@@ -13,6 +13,10 @@ import Discover from "./pages/app/Discover";
 import Matches from "./pages/app/Matches";
 import Chat from "./pages/app/Chat";
 import Profile from "./pages/app/Profile";
+import Subscription from "./pages/app/Subscription";
+import SubscriptionCallback from "./pages/app/SubscriptionCallback";
+import FaceVerification from "./pages/app/FaceVerification";
+import AdminDashboard from "./pages/admin/Dashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,12 +33,16 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/onboarding" element={<Onboarding />} />
+            <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/app" element={<AppLayout />}>
               <Route index element={<Discover />} />
               <Route path="matches" element={<Matches />} />
               <Route path="messages" element={<Matches />} />
               <Route path="chat/:matchId" element={<Chat />} />
               <Route path="profile" element={<Profile />} />
+              <Route path="subscription" element={<Subscription />} />
+              <Route path="subscription/callback" element={<SubscriptionCallback />} />
+              <Route path="verify" element={<FaceVerification />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

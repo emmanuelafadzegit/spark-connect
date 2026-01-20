@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Send, Info } from "lucide-react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { ArrowLeft, Send, Info, Crown, Lock } from "lucide-react";
+import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
-import { getMessages, sendMessage, markMessagesAsRead, getMatches, MatchWithProfile } from "@/lib/api";
+import { getMessages, sendMessage, markMessagesAsRead, getMatches, MatchWithProfile, getSubscription } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatDistanceToNow } from "date-fns";
+import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
 
 type Message = Database['public']['Tables']['messages']['Row'];
@@ -21,6 +22,10 @@ const Chat = () => {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [match, setMatch] = useState<MatchWithProfile | null>(null);
+  const [subscription, setSubscription] = useState<{
+    tier: string;
+    daily_messages_remaining: number | null;
+  } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -59,6 +64,10 @@ const Chat = () => {
     
     setLoading(true);
     
+    // Load subscription info
+    const { data: subData } = await getSubscription();
+    setSubscription(subData);
+    
     // Load match info
     const { data: matchesData } = await getMatches();
     const currentMatch = matchesData.find(m => m.id === matchId);
@@ -78,15 +87,38 @@ const Chat = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const canSendMessage = () => {
+    if (!subscription) return false;
+    // Premium users have unlimited messages (indicated by -1 or null)
+    if (subscription.tier === 'premium' || subscription.tier === 'premium_plus') return true;
+    // Free users check daily limit
+    return subscription.daily_messages_remaining === null || subscription.daily_messages_remaining > 0;
+  };
+
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim() || !matchId) return;
+
+    // Check message limit for free users
+    if (subscription?.tier === 'free' && subscription.daily_messages_remaining !== null && subscription.daily_messages_remaining <= 0) {
+      toast.error("You've reached your daily message limit. Upgrade to Premium for unlimited messages!");
+      return;
+    }
 
     setSending(true);
     const { error } = await sendMessage(matchId, newMessage.trim());
     
     if (!error) {
       setNewMessage("");
+      // Decrement local count for free users
+      if (subscription?.tier === 'free' && subscription.daily_messages_remaining !== null) {
+        setSubscription({
+          ...subscription,
+          daily_messages_remaining: Math.max(0, subscription.daily_messages_remaining - 1)
+        });
+      }
+    } else {
+      toast.error("Failed to send message");
     }
     setSending(false);
   };
@@ -122,6 +154,8 @@ const Chat = () => {
   }
 
   const photo = match.other_user.profile_photos?.find(p => p.is_primary) || match.other_user.profile_photos?.[0];
+  const isFreeUser = subscription?.tier === 'free';
+  const remainingMessages = subscription?.daily_messages_remaining ?? 5;
 
   return (
     <div className="h-[calc(100vh-8rem)] flex flex-col">
@@ -162,6 +196,32 @@ const Chat = () => {
           </button>
         </div>
       </div>
+
+      {/* Free user message limit banner */}
+      {isFreeUser && (
+        <div className="flex-shrink-0 px-4 py-2 bg-primary/10 border-b border-primary/20">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Lock className="w-4 h-4 text-primary" />
+              <span className="text-sm">
+                {remainingMessages > 0 
+                  ? `${remainingMessages} message${remainingMessages !== 1 ? 's' : ''} remaining today`
+                  : "Daily limit reached"
+                }
+              </span>
+            </div>
+            <Button 
+              size="sm" 
+              variant="ghost" 
+              className="h-7 gap-1 text-primary"
+              onClick={() => navigate("/app/subscription")}
+            >
+              <Crown className="w-3 h-3" />
+              Upgrade
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -232,15 +292,15 @@ const Chat = () => {
             <Input
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
-              placeholder="Type a message..."
+              placeholder={canSendMessage() ? "Type a message..." : "Upgrade to send more messages"}
               className="flex-1 rounded-full h-11"
-              disabled={sending}
+              disabled={sending || !canSendMessage()}
             />
             <Button
               type="submit"
               size="icon"
               className="rounded-full h-11 w-11"
-              disabled={!newMessage.trim() || sending}
+              disabled={!newMessage.trim() || sending || !canSendMessage()}
             >
               <Send className="w-5 h-5" />
             </Button>
