@@ -8,6 +8,18 @@ type ProfileUpdate = Database['public']['Tables']['profiles']['Update'];
 export type GenderType = Database['public']['Enums']['gender_type'];
 export type SwipeType = Database['public']['Enums']['swipe_type'];
 export type SubscriptionTier = Database['public']['Enums']['subscription_tier'];
+export type RelationshipIntent = Database['public']['Enums']['relationship_intent'];
+export type SmokingStatus = Database['public']['Enums']['smoking_status'];
+export type DrinkingStatus = Database['public']['Enums']['drinking_status'];
+export type WorkoutStatus = Database['public']['Enums']['workout_status'];
+export type DietType = Database['public']['Enums']['diet_type'];
+export type PetType = Database['public']['Enums']['pet_type'];
+export type SleepSchedule = Database['public']['Enums']['sleep_schedule'];
+export type ChildrenStatus = Database['public']['Enums']['children_status'];
+export type RelationshipStatus = Database['public']['Enums']['relationship_status'];
+export type EducationLevel = Database['public']['Enums']['education_level'];
+export type ZodiacSign = Database['public']['Enums']['zodiac_sign'];
+export type LoveLanguage = Database['public']['Enums']['love_language'];
 
 export interface ProfileWithPhotos extends Profile {
   profile_photos: Array<{
@@ -25,6 +37,12 @@ export interface ProfileWithPhotos extends Profile {
       category: string | null;
     };
   }>;
+  profile_prompts?: Array<{
+    id: string;
+    prompt_question: string;
+    prompt_answer: string;
+    display_order: number;
+  }>;
 }
 
 export interface MatchWithProfile {
@@ -39,6 +57,87 @@ export interface MatchWithProfile {
     created_at: string;
   };
 }
+
+// Lifestyle display helpers
+export const lifestyleLabels = {
+  smoking: {
+    non_smoker: { label: 'Non-smoker', icon: '🚭' },
+    social_smoker: { label: 'Social smoker', icon: '🚬' },
+    smoker: { label: 'Smoker', icon: '🚬' },
+  },
+  drinking: {
+    never: { label: 'Never drinks', icon: '🚫' },
+    socially: { label: 'Social drinker', icon: '🍷' },
+    often: { label: 'Drinks often', icon: '🍺' },
+  },
+  workout: {
+    never: { label: 'Never works out', icon: '🛋️' },
+    sometimes: { label: 'Sometimes works out', icon: '🏃' },
+    often: { label: 'Gym regular', icon: '💪' },
+  },
+  diet: {
+    omnivore: { label: 'Omnivore', icon: '🍖' },
+    vegetarian: { label: 'Vegetarian', icon: '🥗' },
+    vegan: { label: 'Vegan', icon: '🌱' },
+    pescatarian: { label: 'Pescatarian', icon: '🐟' },
+    other: { label: 'Other diet', icon: '🍽️' },
+  },
+  pets: {
+    dog: { label: 'Dog lover', icon: '🐕' },
+    cat: { label: 'Cat lover', icon: '🐱' },
+    both: { label: 'Dog & Cat lover', icon: '🐾' },
+    other: { label: 'Has pets', icon: '🐾' },
+    none: { label: 'No pets', icon: '🚫' },
+  },
+  sleep_schedule: {
+    early_bird: { label: 'Early bird', icon: '🌅' },
+    night_owl: { label: 'Night owl', icon: '🦉' },
+    balanced: { label: 'Balanced', icon: '😴' },
+  },
+  children: {
+    have_kids: { label: 'Has kids', icon: '👶' },
+    want_kids: { label: 'Wants kids', icon: '👶' },
+    dont_want_kids: { label: "Doesn't want kids", icon: '🚫' },
+    open_to_kids: { label: 'Open to kids', icon: '🤷' },
+  },
+  relationship_intent: {
+    long_term: { label: 'Long-term', icon: '💍' },
+    short_term: { label: 'Short-term', icon: '📅' },
+    casual: { label: 'Casual', icon: '😎' },
+    friends: { label: 'Friends', icon: '👋' },
+    figuring_out: { label: 'Figuring it out', icon: '🤔' },
+  },
+  zodiac: {
+    aries: { label: 'Aries', icon: '♈' },
+    taurus: { label: 'Taurus', icon: '♉' },
+    gemini: { label: 'Gemini', icon: '♊' },
+    cancer: { label: 'Cancer', icon: '♋' },
+    leo: { label: 'Leo', icon: '♌' },
+    virgo: { label: 'Virgo', icon: '♍' },
+    libra: { label: 'Libra', icon: '♎' },
+    scorpio: { label: 'Scorpio', icon: '♏' },
+    sagittarius: { label: 'Sagittarius', icon: '♐' },
+    capricorn: { label: 'Capricorn', icon: '♑' },
+    aquarius: { label: 'Aquarius', icon: '♒' },
+    pisces: { label: 'Pisces', icon: '♓' },
+  },
+  love_language: {
+    words_of_affirmation: { label: 'Words of affirmation', icon: '💬' },
+    acts_of_service: { label: 'Acts of service', icon: '🛠️' },
+    receiving_gifts: { label: 'Receiving gifts', icon: '🎁' },
+    quality_time: { label: 'Quality time', icon: '⏰' },
+    physical_touch: { label: 'Physical touch', icon: '🤗' },
+  },
+  education: {
+    high_school: { label: 'High school', icon: '🏫' },
+    some_college: { label: 'Some college', icon: '📚' },
+    bachelors: { label: "Bachelor's", icon: '🎓' },
+    masters: { label: "Master's", icon: '🎓' },
+    doctorate: { label: 'Doctorate', icon: '🎓' },
+    trade_school: { label: 'Trade school', icon: '🔧' },
+    other: { label: 'Other', icon: '📖' },
+  },
+};
 
 // Auth functions
 export const signUp = async (email: string, password: string) => {
@@ -83,7 +182,8 @@ export const getMyProfile = async () => {
       profile_interests (
         interest_id,
         interests (id, name, emoji, category)
-      )
+      ),
+      profile_prompts (id, prompt_question, prompt_answer, display_order)
     `)
     .eq('user_id', user.id)
     .maybeSingle();
@@ -142,7 +242,8 @@ export const getDiscoverProfiles = async (limit = 10) => {
       profile_interests (
         interest_id,
         interests (id, name, emoji, category)
-      )
+      ),
+      profile_prompts (id, prompt_question, prompt_answer, display_order)
     `)
     .eq('is_visible', true)
     .eq('is_profile_complete', true)
@@ -175,8 +276,7 @@ export const createSwipe = async (swipedId: string, swipeType: SwipeType) => {
     const { data: matchData } = await supabase
       .from('matches')
       .select('id')
-      .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
-      .or(`user1_id.eq.${swipedId},user2_id.eq.${swipedId}`)
+      .or(`and(user1_id.eq.${user.id < swipedId ? user.id : swipedId},user2_id.eq.${user.id > swipedId ? user.id : swipedId})`)
       .maybeSingle();
 
     return { data, error: null, isMatch: !!matchData };
@@ -220,7 +320,8 @@ export const getMatches = async () => {
         profile_interests (
           interest_id,
           interests (id, name, emoji, category)
-        )
+        ),
+        profile_prompts (id, prompt_question, prompt_answer, display_order)
       `)
       .eq('user_id', otherUserId)
       .single();
@@ -340,6 +441,57 @@ export const updateProfileInterests = async (interestIds: string[]) => {
   return { error: null };
 };
 
+// Prompts functions
+export const getPrompts = async () => {
+  const { data, error } = await supabase
+    .from('prompts')
+    .select('*')
+    .eq('is_active', true)
+    .order('category', { ascending: true });
+
+  return { data: data || [], error };
+};
+
+export const saveProfilePrompt = async (promptQuestion: string, promptAnswer: string) => {
+  const { data: profile } = await getMyProfile();
+  if (!profile) return { error: new Error('Profile not found') };
+
+  // Check if prompt already exists
+  const { data: existing } = await supabase
+    .from('profile_prompts')
+    .select('id')
+    .eq('profile_id', profile.id)
+    .eq('prompt_question', promptQuestion)
+    .maybeSingle();
+
+  if (existing) {
+    // Update existing
+    const { error } = await supabase
+      .from('profile_prompts')
+      .update({ prompt_answer: promptAnswer })
+      .eq('id', existing.id);
+    return { error };
+  } else {
+    // Insert new
+    const { error } = await supabase
+      .from('profile_prompts')
+      .insert({
+        profile_id: profile.id,
+        prompt_question: promptQuestion,
+        prompt_answer: promptAnswer,
+      });
+    return { error };
+  }
+};
+
+export const deleteProfilePrompt = async (promptId: string) => {
+  const { error } = await supabase
+    .from('profile_prompts')
+    .delete()
+    .eq('id', promptId);
+  return { error };
+};
+
 // Photo upload functions
 export const uploadProfilePhoto = async (file: File) => {
   const { data: { user } } = await supabase.auth.getUser();
@@ -389,4 +541,43 @@ export const addProfilePhoto = async (photoUrl: string, isPrimary = false) => {
     .single();
 
   return { data, error };
+};
+
+export const deleteProfilePhoto = async (photoId: string) => {
+  const { error } = await supabase
+    .from('profile_photos')
+    .delete()
+    .eq('id', photoId);
+  return { error };
+};
+
+export const setPrimaryPhoto = async (photoId: string) => {
+  const { data: profile } = await getMyProfile();
+  if (!profile) return { error: new Error('Profile not found') };
+
+  // Unset all primary flags
+  await supabase
+    .from('profile_photos')
+    .update({ is_primary: false })
+    .eq('profile_id', profile.id);
+
+  // Set new primary
+  const { error } = await supabase
+    .from('profile_photos')
+    .update({ is_primary: true })
+    .eq('id', photoId);
+
+  return { error };
+};
+
+// Convert height between cm and feet/inches
+export const cmToFeetInches = (cm: number): { feet: number; inches: number } => {
+  const totalInches = cm / 2.54;
+  const feet = Math.floor(totalInches / 12);
+  const inches = Math.round(totalInches % 12);
+  return { feet, inches };
+};
+
+export const feetInchesToCm = (feet: number, inches: number): number => {
+  return Math.round((feet * 12 + inches) * 2.54);
 };
