@@ -14,16 +14,412 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      blocked_users: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string
+          id: string
+          reason: string | null
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+        }
+        Relationships: []
+      }
+      interests: {
+        Row: {
+          category: string | null
+          created_at: string
+          emoji: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          emoji?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          emoji?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      matches: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean | null
+          last_message_at: string | null
+          user1_id: string
+          user2_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          last_message_at?: string | null
+          user1_id: string
+          user2_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          last_message_at?: string | null
+          user1_id?: string
+          user2_id?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_read: boolean | null
+          match_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          match_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          match_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profile_interests: {
+        Row: {
+          created_at: string
+          id: string
+          interest_id: string
+          profile_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          interest_id: string
+          profile_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          interest_id?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_interests_interest_id_fkey"
+            columns: ["interest_id"]
+            isOneToOne: false
+            referencedRelation: "interests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_interests_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profile_photos: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          is_primary: boolean | null
+          photo_url: string
+          profile_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_primary?: boolean | null
+          photo_url: string
+          profile_id: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_primary?: boolean | null
+          photo_url?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_photos_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          bio: string | null
+          city: string | null
+          created_at: string
+          date_of_birth: string
+          display_name: string
+          gender: Database["public"]["Enums"]["gender_type"]
+          id: string
+          is_profile_complete: boolean | null
+          is_verified: boolean | null
+          is_visible: boolean | null
+          last_active: string | null
+          latitude: number | null
+          longitude: number | null
+          looking_for: Database["public"]["Enums"]["gender_type"][] | null
+          max_age: number | null
+          max_distance_km: number | null
+          min_age: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bio?: string | null
+          city?: string | null
+          created_at?: string
+          date_of_birth: string
+          display_name: string
+          gender: Database["public"]["Enums"]["gender_type"]
+          id?: string
+          is_profile_complete?: boolean | null
+          is_verified?: boolean | null
+          is_visible?: boolean | null
+          last_active?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          looking_for?: Database["public"]["Enums"]["gender_type"][] | null
+          max_age?: number | null
+          max_distance_km?: number | null
+          min_age?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bio?: string | null
+          city?: string | null
+          created_at?: string
+          date_of_birth?: string
+          display_name?: string
+          gender?: Database["public"]["Enums"]["gender_type"]
+          id?: string
+          is_profile_complete?: boolean | null
+          is_verified?: boolean | null
+          is_visible?: boolean | null
+          last_active?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          looking_for?: Database["public"]["Enums"]["gender_type"][] | null
+          max_age?: number | null
+          max_distance_km?: number | null
+          min_age?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      reports: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          reason: string
+          reported_user_id: string
+          reporter_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          reason: string
+          reported_user_id: string
+          reporter_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          reason?: string
+          reported_user_id?: string
+          reporter_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          daily_swipes_remaining: number | null
+          id: string
+          is_active: boolean | null
+          last_swipe_reset: string | null
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          tier: Database["public"]["Enums"]["subscription_tier"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          daily_swipes_remaining?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_swipe_reset?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          tier?: Database["public"]["Enums"]["subscription_tier"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          daily_swipes_remaining?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_swipe_reset?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          tier?: Database["public"]["Enums"]["subscription_tier"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      swipes: {
+        Row: {
+          created_at: string
+          id: string
+          swipe_type: Database["public"]["Enums"]["swipe_type"]
+          swiped_id: string
+          swiper_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          swipe_type: Database["public"]["Enums"]["swipe_type"]
+          swiped_id: string
+          swiper_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          swipe_type?: Database["public"]["Enums"]["swipe_type"]
+          swiped_id?: string
+          swiper_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      are_matched: {
+        Args: { user_a: string; user_b: string }
+        Returns: boolean
+      }
+      calculate_age: { Args: { dob: string }; Returns: number }
+      get_subscription_tier: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["subscription_tier"]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      has_swiped: { Args: { swiped: string; swiper: string }; Returns: boolean }
+      is_admin: { Args: never; Returns: boolean }
+      is_blocked: {
+        Args: { checker_id: string; target_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "user" | "admin"
+      gender_type: "male" | "female" | "non_binary" | "other"
+      subscription_tier: "free" | "premium" | "premium_plus"
+      swipe_type: "like" | "pass" | "super_like"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +546,11 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["user", "admin"],
+      gender_type: ["male", "female", "non_binary", "other"],
+      subscription_tier: ["free", "premium", "premium_plus"],
+      swipe_type: ["like", "pass", "super_like"],
+    },
   },
 } as const

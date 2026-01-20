@@ -3,17 +3,41 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Heart, Mail, Lock, User, ArrowLeft } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Heart, Mail, Lock, User, ArrowLeft, Loader2 } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { signUp } from "@/lib/api";
+import { toast } from "sonner";
 
 const Signup = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement signup logic
+    
+    if (password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
+    setLoading(true);
+
+    const { error } = await signUp(email, password);
+
+    if (error) {
+      toast.error(error.message || "Failed to create account");
+      setLoading(false);
+      return;
+    }
+
+    // Store name temporarily for onboarding
+    localStorage.setItem('onboarding_name', name);
+    
+    toast.success("Account created! Let's set up your profile.");
+    navigate("/onboarding");
   };
 
   return (
@@ -53,6 +77,7 @@ const Signup = () => {
                   onChange={(e) => setName(e.target.value)}
                   className="pl-10 h-12 rounded-xl"
                   required
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -69,6 +94,7 @@ const Signup = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-10 h-12 rounded-xl"
                   required
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -85,6 +111,8 @@ const Signup = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   className="pl-10 h-12 rounded-xl"
                   required
+                  minLength={6}
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -96,8 +124,15 @@ const Signup = () => {
               <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
             </p>
 
-            <Button type="submit" variant="hero" size="lg" className="w-full">
-              Create Account
+            <Button type="submit" variant="hero" size="lg" className="w-full" disabled={loading}>
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Creating account...
+                </>
+              ) : (
+                "Create Account"
+              )}
             </Button>
           </form>
 
