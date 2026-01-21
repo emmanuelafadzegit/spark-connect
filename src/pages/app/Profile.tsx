@@ -55,9 +55,9 @@ const Profile = () => {
 
   const menuItems = [
     { icon: Edit2, label: "Edit Profile", to: "/app/profile/edit" },
+    { icon: Shield, label: "Verify Your Face", to: "/app/verify" },
     { icon: Settings, label: "Settings", to: "/app/settings" },
-    { icon: Shield, label: "Safety & Privacy", to: "/app/safety" },
-    { icon: Crown, label: "Get Premium", to: "/app/premium", highlight: true },
+    { icon: Crown, label: "Get Premium", to: "/app/subscription", highlight: true },
   ];
 
   return (
