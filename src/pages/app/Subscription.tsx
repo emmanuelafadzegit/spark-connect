@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Check, Crown, Star, Zap, Shield, Eye, Undo2, MessageCircle, ArrowLeft, Loader2 } from "lucide-react";
+import { Check, Crown, Star, Zap, Shield, Eye, Undo2, MessageCircle, ArrowLeft, Loader2, Smartphone, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/AuthContext";
 import { getSubscription } from "@/lib/api";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-
-const PAYSTACK_PUBLIC_KEY = "pk_live_11f025b6bf40a265cc0c9da28b380a90807db6c2";
+import { getPlatform, isNativeApp, shouldUseIAP, PRODUCTS } from "@/lib/payment";
+import { iapService } from "@/lib/iap";
 
 interface Plan {
   id: string;
@@ -75,10 +76,15 @@ const Subscription = () => {
   const [currentTier, setCurrentTier] = useState<string>("free");
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState<string | null>(null);
+  const platform = getPlatform();
+  const isNative = isNativeApp();
 
   useEffect(() => {
     loadSubscription();
-  }, []);
+    if (isNative) {
+      iapService.initialize().catch(console.error);
+    }
+  }, [isNative]);
 
   const loadSubscription = async () => {
     const { data } = await getSubscription();
@@ -94,18 +100,53 @@ const Subscription = () => {
     setProcessing(planId);
 
     try {
-      const { data, error } = await supabase.functions.invoke("paystack-initialize", {
-        body: { plan: planId, email: user?.email },
-      });
+      const product = PRODUCTS[planId];
+      const useIAP = shouldUseIAP(product?.type || 'subscription');
 
-      if (error) throw error;
+      if (useIAP) {
+        // Native IAP flow
+        const result = await iapService.purchaseSubscription(
+          platform === 'ios' ? product.appleProductId! : product.googleProductId!
+        );
 
-      if (data.authorization_url) {
-        window.location.href = data.authorization_url;
+        if (result.success) {
+          toast.success("Subscription activated!");
+          await loadSubscription();
+        } else {
+          toast.error(result.error || "Purchase failed");
+        }
+      } else {
+        // Web Paystack flow
+        const { data, error } = await supabase.functions.invoke("paystack-initialize", {
+          body: { plan: planId, email: user?.email },
+        });
+
+        if (error) throw error;
+
+        if (data.authorization_url) {
+          window.location.href = data.authorization_url;
+        }
       }
     } catch (error: any) {
       console.error("Payment error:", error);
-      toast.error(error.message || "Failed to initialize payment");
+      toast.error(error.message || "Failed to process payment");
+    } finally {
+      setProcessing(null);
+    }
+  };
+
+  const handleRestorePurchases = async () => {
+    setProcessing("restore");
+    try {
+      const result = await iapService.restorePurchases();
+      if (result.success) {
+        toast.success("Purchases restored!");
+        await loadSubscription();
+      } else {
+        toast.error(result.error || "Restore failed");
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Restore failed");
     } finally {
       setProcessing(null);
     }
@@ -135,6 +176,16 @@ const Subscription = () => {
       </div>
 
       <div className="container mx-auto px-4 py-8">
+        {/* Platform indicator for native */}
+        {isNative && (
+          <Alert className="mb-6">
+            <Smartphone className="h-4 w-4" />
+            <AlertDescription>
+              {platform === 'ios' ? 'Apple App Store' : 'Google Play'} billing will be used for subscriptions.
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Current Plan Badge */}
         {currentTier !== "free" && (
           <div className="mb-8 text-center">
@@ -226,6 +277,22 @@ const Subscription = () => {
             </motion.div>
           ))}
         </div>
+
+        {/* Restore Purchases - iOS/Android only */}
+        {isNative && (
+          <div className="mt-8 text-center">
+            <Button
+              variant="ghost"
+              onClick={handleRestorePurchases}
+              disabled={processing === "restore"}
+            >
+              {processing === "restore" ? (
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              ) : null}
+              Restore Purchases
+            </Button>
+          </div>
+        )}
 
         {/* Features Comparison */}
         <div className="mt-16 max-w-3xl mx-auto">
