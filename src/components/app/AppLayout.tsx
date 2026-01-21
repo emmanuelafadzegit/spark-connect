@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
-import { Heart, MessageCircle, User, Flame, LogOut } from "lucide-react";
+import { Heart, MessageCircle, User, Flame, LogOut, Grid3X3 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { signOut } from "@/lib/api";
@@ -42,6 +42,7 @@ const AppLayout = () => {
 
   const navItems = [
     { to: "/app", icon: Flame, label: "Discover", end: true },
+    { to: "/app/feeds", icon: Grid3X3, label: "Feeds" },
     { to: "/app/matches", icon: Heart, label: "Matches" },
     { to: "/app/messages", icon: MessageCircle, label: "Messages" },
     { to: "/app/profile", icon: User, label: "Profile" },
