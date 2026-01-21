@@ -20,6 +20,7 @@ import Subscription from "./pages/app/Subscription";
 import SubscriptionCallback from "./pages/app/SubscriptionCallback";
 import FaceVerification from "./pages/app/FaceVerification";
 import Feeds from "./pages/app/Feeds";
+import Consumables from "./pages/app/Consumables";
 import AdminDashboard from "./pages/admin/Dashboard";
 import NotFound from "./pages/NotFound";
 
@@ -50,6 +51,7 @@ const App = () => (
               <Route path="profile" element={<Profile />} />
               <Route path="subscription" element={<Subscription />} />
               <Route path="subscription/callback" element={<SubscriptionCallback />} />
+              <Route path="consumables" element={<Consumables />} />
               <Route path="verify" element={<FaceVerification />} />
             </Route>
             <Route path="*" element={<NotFound />} />
