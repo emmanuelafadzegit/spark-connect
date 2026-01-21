@@ -310,6 +310,42 @@ export type Database = {
           },
         ]
       }
+      password_reset_tokens: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          otp_code: string
+          otp_expires_at: string
+          otp_verified: boolean | null
+          reset_token: string | null
+          token_expires_at: string | null
+          used: boolean | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          otp_code: string
+          otp_expires_at: string
+          otp_verified?: boolean | null
+          reset_token?: string | null
+          token_expires_at?: string | null
+          used?: boolean | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          otp_code?: string
+          otp_expires_at?: string
+          otp_verified?: boolean | null
+          reset_token?: string | null
+          token_expires_at?: string | null
+          used?: boolean | null
+        }
+        Relationships: []
+      }
       paystack_transactions: {
         Row: {
           amount: number
