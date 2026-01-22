@@ -32,18 +32,20 @@ serve(async (req) => {
 
     const { plan, email, type } = await req.json()
 
-    // Pricing in GHS (pesewas) - Paystack Ghana only supports GHS
-    // Exchange rate: ~1 USD = 15 GHS
-    const subscriptions: Record<string, { amount: number; name: string }> = {
-      premium: { amount: 30000, name: 'Premium' }, // 300 GHS = ~$20
-      premium_plus: { amount: 67500, name: 'Premium Plus' }, // 675 GHS = ~$45
+    // USD to GHS exchange rate
+    const USD_TO_GHS_RATE = 15
+
+    // Pricing in USD - will be converted to GHS (pesewas) for Paystack
+    const subscriptions: Record<string, { amount_usd: number; name: string }> = {
+      premium: { amount_usd: 20, name: 'Premium' }, // $20
+      premium_plus: { amount_usd: 45, name: 'Premium Plus' }, // $45
     }
 
-    const consumables: Record<string, { amount: number; name: string }> = {
-      boost_1: { amount: 7500, name: '1 Boost' }, // 75 GHS = ~$5
-      boost_5: { amount: 30000, name: '5 Boosts' }, // 300 GHS = ~$20
-      super_like_5: { amount: 15000, name: '5 Super Likes' }, // 150 GHS = ~$10
-      rewind_5: { amount: 12000, name: '5 Rewinds' }, // 120 GHS = ~$8
+    const consumables: Record<string, { amount_usd: number; name: string }> = {
+      boost_1: { amount_usd: 5, name: '1 Boost' }, // $5
+      boost_5: { amount_usd: 20, name: '5 Boosts' }, // $20
+      super_like_5: { amount_usd: 10, name: '5 Super Likes' }, // $10
+      rewind_5: { amount_usd: 8, name: '5 Rewinds' }, // $8
     }
 
     const isConsumable = type === 'consumable'
@@ -57,6 +59,9 @@ serve(async (req) => {
       )
     }
 
+    // Convert USD to GHS pesewas for Paystack
+    const amountInGhsPesewas = Math.round(selectedProduct.amount_usd * USD_TO_GHS_RATE * 100)
+
     const reference = `pay_${user.id.substring(0, 8)}_${Date.now()}`
 
     // Create transaction record
@@ -65,7 +70,7 @@ serve(async (req) => {
       .insert({
         user_id: user.id,
         reference,
-        amount: selectedProduct.amount,
+        amount: amountInGhsPesewas,
         currency: 'GHS',
         plan,
         status: 'pending',
@@ -79,7 +84,7 @@ serve(async (req) => {
       )
     }
 
-    // Initialize Paystack transaction with GHS currency
+    // Initialize Paystack transaction with GHS currency (converted from USD)
     const paystackResponse = await fetch('https://api.paystack.co/transaction/initialize', {
       method: 'POST',
       headers: {
@@ -88,7 +93,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         email: email || user.email,
-        amount: selectedProduct.amount,
+        amount: amountInGhsPesewas,
         currency: 'GHS',
         reference,
         callback_url: `${req.headers.get('origin')}/app/subscription/callback`,
@@ -97,6 +102,8 @@ serve(async (req) => {
           plan,
           plan_name: selectedProduct.name,
           type: isConsumable ? 'consumable' : 'subscription',
+          original_amount_usd: selectedProduct.amount_usd,
+          exchange_rate: USD_TO_GHS_RATE,
         },
       }),
     })
