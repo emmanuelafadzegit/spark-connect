@@ -22,7 +22,7 @@ const consumables: ConsumableItem[] = [
     id: "boost_1",
     name: "1 Boost",
     description: "Get more visibility for 30 minutes",
-    price: 75,
+    price: 5,
     icon: <Zap className="w-6 h-6" />,
     color: "from-orange-500 to-red-500",
   },
@@ -30,7 +30,7 @@ const consumables: ConsumableItem[] = [
     id: "boost_5",
     name: "5 Boosts",
     description: "Best value! Save 20%",
-    price: 300,
+    price: 20,
     icon: <Zap className="w-6 h-6" />,
     color: "from-orange-500 to-red-500",
   },
@@ -38,7 +38,7 @@ const consumables: ConsumableItem[] = [
     id: "super_like_5",
     name: "5 Super Likes",
     description: "Stand out from the crowd",
-    price: 150,
+    price: 10,
     icon: <Star className="w-6 h-6" />,
     color: "from-blue-500 to-cyan-500",
   },
@@ -46,7 +46,7 @@ const consumables: ConsumableItem[] = [
     id: "rewind_5",
     name: "5 Rewinds",
     description: "Undo accidental swipes",
-    price: 120,
+    price: 8,
     icon: <Undo2 className="w-6 h-6" />,
     color: "from-purple-500 to-pink-500",
   },
@@ -116,7 +116,7 @@ const Consumables = () => {
                     </div>
                     <div>
                       <CardTitle className="text-lg">{item.name}</CardTitle>
-                      <CardDescription>GH₵{item.price}</CardDescription>
+                      <CardDescription>${item.price}</CardDescription>
                     </div>
                   </div>
                 </CardHeader>
