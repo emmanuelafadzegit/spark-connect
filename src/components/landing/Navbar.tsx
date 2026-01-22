@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Heart, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Link } from "react-router-dom";
+import BexMatchLogo from "@/components/BexMatchLogo";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -28,11 +29,8 @@ const Navbar = () => {
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16 md:h-20">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2">
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${isScrolled ? 'bg-gradient-primary' : 'bg-white/20 backdrop-blur-sm'}`}>
-                <Heart className={`w-5 h-5 ${isScrolled ? 'text-primary-foreground' : 'text-white'} fill-current`} />
-              </div>
-              <span className={`text-xl font-bold ${isScrolled ? 'text-foreground' : 'text-white'}`}>BexMatch</span>
+            <Link to="/" className={isScrolled ? '' : 'text-white'}>
+              <BexMatchLogo size="sm" />
             </Link>
 
             {/* Desktop Menu */}

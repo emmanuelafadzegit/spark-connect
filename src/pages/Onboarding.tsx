@@ -4,12 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Heart, Camera, ArrowRight, ArrowLeft, Loader2, Calendar, MapPin, Ruler, Briefcase, GraduationCap } from "lucide-react";
+import { Camera, ArrowRight, ArrowLeft, Loader2, Calendar, MapPin, Briefcase } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { createProfile, getInterests, updateProfileInterests, uploadProfilePhoto, addProfilePhoto, lifestyleLabels, feetInchesToCm } from "@/lib/api";
 import type { GenderType, RelationshipIntent, SmokingStatus, DrinkingStatus, WorkoutStatus, DietType, PetType, ChildrenStatus, ZodiacSign } from "@/lib/api";
 import { toast } from "sonner";
+import BexMatchLogo from "@/components/BexMatchLogo";
 
 const genderOptions: { value: GenderType; label: string }[] = [
   { value: 'male', label: 'Male' },
@@ -27,7 +28,7 @@ const relationshipIntentOptions: { value: RelationshipIntent; label: string; ico
 ];
 
 const Onboarding = () => {
-  const { user, refreshProfile } = useAuth();
+  const { user, hasProfile, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -67,8 +68,15 @@ const Onboarding = () => {
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
 
   useEffect(() => {
+    // If user not logged in, redirect to signup
     if (!user) {
       navigate("/signup");
+      return;
+    }
+
+    // If user already has a complete profile, redirect to app
+    if (hasProfile) {
+      navigate("/app");
       return;
     }
 
@@ -81,7 +89,7 @@ const Onboarding = () => {
     getInterests().then(({ data }) => {
       setInterests(data);
     });
-  }, [user, navigate]);
+  }, [user, hasProfile, navigate]);
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -666,9 +674,7 @@ const Onboarding = () => {
 
           {/* Logo */}
           <div className="flex justify-center mb-4">
-            <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center">
-              <Heart className="w-5 h-5 text-primary-foreground fill-primary-foreground" />
-            </div>
+            <BexMatchLogo size="md" showText={false} />
           </div>
 
           <AnimatePresence mode="wait">
