@@ -1,12 +1,19 @@
 import { motion } from "framer-motion";
 import { ArrowLeft, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import SEOHelmet from "@/components/SEOHelmet";
 
 const Privacy = () => {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-background pb-24">
+      <SEOHelmet 
+        title="Privacy Policy"
+        description="Read BexMatch's Privacy Policy. Learn how we collect, use, and protect your personal information on our dating platform."
+        url="https://matchlychat.lovable.app/privacy"
+      />
+      
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-lg border-b border-border">
         <div className="container mx-auto px-4 py-4 flex items-center gap-4">
@@ -22,7 +29,7 @@ const Privacy = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <p className="text-muted-foreground">Last updated: January 2025</p>
+          <p className="text-muted-foreground">Last updated: January 2026</p>
 
           <h2>1. Information We Collect</h2>
           
@@ -104,11 +111,11 @@ const Privacy = () => {
 
           <h2>10. Contact Us</h2>
           <p>
-            For privacy-related questions or to exercise your rights, contact us at privacy@matchly.app
+            For privacy-related questions or to exercise your rights, contact us at privacy@bexmatch.app
           </p>
 
           <div className="mt-8 text-center text-muted-foreground flex items-center justify-center gap-1">
-            Made with <Heart className="w-4 h-4 text-primary fill-primary" /> by Matchly
+            Made with <Heart className="w-4 h-4 text-primary fill-primary" /> by BexMatch
           </div>
         </motion.div>
       </div>

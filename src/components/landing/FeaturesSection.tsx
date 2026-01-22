@@ -73,7 +73,7 @@ const FeaturesSection = () => {
           className="text-center mb-16"
         >
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            Why Choose <span className="text-gradient-primary">MatchLy</span>
+            Why Choose <span className="text-gradient-primary">BexMatch</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Experience dating like never before with features designed to help you find genuine connections.

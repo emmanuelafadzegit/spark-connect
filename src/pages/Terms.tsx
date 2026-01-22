@@ -1,12 +1,19 @@
 import { motion } from "framer-motion";
 import { ArrowLeft, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import SEOHelmet from "@/components/SEOHelmet";
 
 const Terms = () => {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-background pb-24">
+      <SEOHelmet 
+        title="Terms of Service"
+        description="Read the Terms of Service for BexMatch dating app. Understand your rights and responsibilities when using our platform."
+        url="https://matchlychat.lovable.app/terms"
+      />
+      
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-lg border-b border-border">
         <div className="container mx-auto px-4 py-4 flex items-center gap-4">
@@ -22,17 +29,17 @@ const Terms = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <p className="text-muted-foreground">Last updated: January 2025</p>
+          <p className="text-muted-foreground">Last updated: January 2026</p>
 
           <h2>1. Acceptance of Terms</h2>
           <p>
-            By accessing or using Matchly ("the App"), you agree to be bound by these Terms of Service. 
+            By accessing or using BexMatch ("the App"), you agree to be bound by these Terms of Service. 
             If you do not agree to these terms, please do not use the App.
           </p>
 
           <h2>2. Eligibility</h2>
           <p>
-            You must be at least 18 years old to use Matchly. By using the App, you represent and warrant 
+            You must be at least 18 years old to use BexMatch. By using the App, you represent and warrant 
             that you are at least 18 years old and have the legal capacity to enter into these Terms.
           </p>
 
@@ -70,7 +77,7 @@ const Terms = () => {
           <h2>6. Subscriptions and Payments</h2>
           <p>
             Premium features require a paid subscription. Subscriptions automatically renew unless cancelled 
-            before the renewal date. Refunds are subject to the policies of the respective app stores.
+            before the renewal date. Refunds are subject to our refund policy.
           </p>
 
           <h2>7. Termination</h2>
@@ -88,7 +95,7 @@ const Terms = () => {
 
           <h2>9. Limitation of Liability</h2>
           <p>
-            To the maximum extent permitted by law, Matchly shall not be liable for any indirect, 
+            To the maximum extent permitted by law, BexMatch shall not be liable for any indirect, 
             incidental, special, consequential, or punitive damages arising from your use of the App.
           </p>
 
@@ -100,11 +107,11 @@ const Terms = () => {
 
           <h2>11. Contact Us</h2>
           <p>
-            If you have questions about these Terms, please contact us at support@matchly.app
+            If you have questions about these Terms, please contact us at support@bexmatch.app
           </p>
 
           <div className="mt-8 text-center text-muted-foreground flex items-center justify-center gap-1">
-            Made with <Heart className="w-4 h-4 text-primary fill-primary" /> by Matchly
+            Made with <Heart className="w-4 h-4 text-primary fill-primary" /> by BexMatch
           </div>
         </motion.div>
       </div>
