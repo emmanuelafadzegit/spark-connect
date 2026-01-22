@@ -30,18 +30,29 @@ serve(async (req) => {
       )
     }
 
-    const { plan, email } = await req.json()
+    const { plan, email, type } = await req.json()
 
-    // Plan pricing in NGN (kobo)
-    const plans: Record<string, { amount: number; name: string }> = {
-      premium: { amount: 2000000, name: 'Premium' }, // 20,000 NGN = ~$20
-      premium_plus: { amount: 4500000, name: 'Premium Plus' }, // 45,000 NGN = ~$45
+    // Pricing in GHS (pesewas) - Paystack Ghana only supports GHS
+    // Exchange rate: ~1 USD = 15 GHS
+    const subscriptions: Record<string, { amount: number; name: string }> = {
+      premium: { amount: 30000, name: 'Premium' }, // 300 GHS = ~$20
+      premium_plus: { amount: 67500, name: 'Premium Plus' }, // 675 GHS = ~$45
     }
 
-    const selectedPlan = plans[plan]
-    if (!selectedPlan) {
+    const consumables: Record<string, { amount: number; name: string }> = {
+      boost_1: { amount: 7500, name: '1 Boost' }, // 75 GHS = ~$5
+      boost_5: { amount: 30000, name: '5 Boosts' }, // 300 GHS = ~$20
+      super_like_5: { amount: 15000, name: '5 Super Likes' }, // 150 GHS = ~$10
+      rewind_5: { amount: 12000, name: '5 Rewinds' }, // 120 GHS = ~$8
+    }
+
+    const isConsumable = type === 'consumable'
+    const products = isConsumable ? consumables : subscriptions
+    const selectedProduct = products[plan]
+    
+    if (!selectedProduct) {
       return new Response(
-        JSON.stringify({ error: 'Invalid plan' }),
+        JSON.stringify({ error: 'Invalid plan or product' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -54,7 +65,8 @@ serve(async (req) => {
       .insert({
         user_id: user.id,
         reference,
-        amount: selectedPlan.amount,
+        amount: selectedProduct.amount,
+        currency: 'GHS',
         plan,
         status: 'pending',
       })
@@ -67,7 +79,7 @@ serve(async (req) => {
       )
     }
 
-    // Initialize Paystack transaction
+    // Initialize Paystack transaction with GHS currency
     const paystackResponse = await fetch('https://api.paystack.co/transaction/initialize', {
       method: 'POST',
       headers: {
@@ -76,13 +88,15 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         email: email || user.email,
-        amount: selectedPlan.amount,
+        amount: selectedProduct.amount,
+        currency: 'GHS',
         reference,
         callback_url: `${req.headers.get('origin')}/app/subscription/callback`,
         metadata: {
           user_id: user.id,
           plan,
-          plan_name: selectedPlan.name,
+          plan_name: selectedProduct.name,
+          type: isConsumable ? 'consumable' : 'subscription',
         },
       }),
     })

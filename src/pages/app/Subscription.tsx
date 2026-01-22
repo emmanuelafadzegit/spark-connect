@@ -24,7 +24,7 @@ const plans: Plan[] = [
     id: "free",
     name: "Free",
     price: 0,
-    currency: "USD",
+    currency: "GHS",
     features: [
       "5 messages per day",
       "20 swipes per day",
@@ -36,8 +36,8 @@ const plans: Plan[] = [
   {
     id: "premium",
     name: "Premium",
-    price: 20,
-    currency: "USD",
+    price: 300,
+    currency: "GHS",
     features: [
       "Unlimited messages",
       "Unlimited swipes",
@@ -52,8 +52,8 @@ const plans: Plan[] = [
   {
     id: "premium_plus",
     name: "Premium Plus",
-    price: 45,
-    currency: "USD",
+    price: 675,
+    currency: "GHS",
     features: [
       "Everything in Premium",
       "Priority likes",
@@ -186,7 +186,7 @@ const Subscription = () => {
                       "Free"
                     ) : (
                       <>
-                        ${plan.price}
+                        GH₵{plan.price}
                         <span className="text-sm font-normal text-muted-foreground">
                           /month
                         </span>
