@@ -10,23 +10,23 @@ export interface Product {
   type: PurchaseType;
 }
 
-// Product catalog
+// Product catalog - prices in Ghana Cedis (GHS)
 export const PRODUCTS: Record<string, Product> = {
   // Subscriptions
   premium: {
     id: 'premium',
     title: 'Premium',
     description: 'Unlimited swipes, see who likes you, rewind',
-    price: 20,
-    currency: 'USD',
+    price: 300,
+    currency: 'GHS',
     type: 'subscription',
   },
   premium_plus: {
     id: 'premium_plus',
     title: 'Premium Plus',
     description: 'All Premium features + message before matching',
-    price: 45,
-    currency: 'USD',
+    price: 675,
+    currency: 'GHS',
     type: 'subscription',
   },
   // Consumables
@@ -34,32 +34,32 @@ export const PRODUCTS: Record<string, Product> = {
     id: 'boost_1',
     title: '1 Boost',
     description: 'Get more visibility for 30 minutes',
-    price: 5,
-    currency: 'USD',
+    price: 75,
+    currency: 'GHS',
     type: 'consumable',
   },
   boost_5: {
     id: 'boost_5',
     title: '5 Boosts',
     description: 'Get more visibility for 30 minutes each',
-    price: 20,
-    currency: 'USD',
+    price: 300,
+    currency: 'GHS',
     type: 'consumable',
   },
   super_like_5: {
     id: 'super_like_5',
     title: '5 Super Likes',
     description: 'Stand out with Super Likes',
-    price: 10,
-    currency: 'USD',
+    price: 150,
+    currency: 'GHS',
     type: 'consumable',
   },
   rewind_5: {
     id: 'rewind_5',
     title: '5 Rewinds',
     description: 'Undo your last swipe',
-    price: 8,
-    currency: 'USD',
+    price: 120,
+    currency: 'GHS',
     type: 'consumable',
   },
 };
