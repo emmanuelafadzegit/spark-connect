@@ -1,10 +1,11 @@
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
-import { Heart, MessageCircle, User, Flame, LogOut, Grid3X3 } from "lucide-react";
+import { MessageCircle, User, Flame, LogOut, Grid3X3, Heart } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { signOut } from "@/lib/api";
 import { toast } from "sonner";
 import { useEffect } from "react";
+import BexMatchLogo from "@/components/BexMatchLogo";
 
 const AppLayout = () => {
   const { user, hasProfile, loading } = useAuth();
@@ -53,12 +54,7 @@ const AppLayout = () => {
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-lg border-b border-border">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl bg-gradient-primary flex items-center justify-center">
-              <Heart className="w-5 h-5 text-primary-foreground fill-primary-foreground" />
-            </div>
-            <span className="text-xl font-bold">BexMatch</span>
-          </div>
+          <BexMatchLogo size="sm" />
           <button
             onClick={handleSignOut}
             className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"

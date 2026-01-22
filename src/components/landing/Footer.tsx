@@ -1,5 +1,6 @@
 import { Heart } from "lucide-react";
 import { Link } from "react-router-dom";
+import BexMatchLogo from "@/components/BexMatchLogo";
 
 const Footer = () => {
   return (
@@ -8,11 +9,8 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           {/* Brand */}
           <div className="md:col-span-1">
-            <Link to="/" className="inline-flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center">
-                <Heart className="w-5 h-5 text-primary-foreground fill-primary-foreground" />
-              </div>
-              <span className="text-xl font-bold">BexMatch</span>
+            <Link to="/" className="inline-block mb-4">
+              <BexMatchLogo size="sm" />
             </Link>
             <p className="text-muted-foreground text-sm">
               Find meaningful connections with people who share your passions.

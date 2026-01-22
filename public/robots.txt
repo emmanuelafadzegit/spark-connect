@@ -1,3 +1,6 @@
+# BexMatch Robots.txt
+# https://bexmatch.com
+
 User-agent: Googlebot
 Allow: /
 
@@ -12,3 +15,8 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /app/
+Disallow: /admin/
+
+# Sitemap
+Sitemap: https://bexmatch.com/sitemap.xml
