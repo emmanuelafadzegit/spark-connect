@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
@@ -31,43 +32,45 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/verify-otp" element={<VerifyOTP />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/onboarding" element={<Onboarding />} />
-            <Route path="/terms" element={<Terms />} />
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/app" element={<AppLayout />}>
-              <Route index element={<Discover />} />
-              <Route path="feeds" element={<Feeds />} />
-              <Route path="matches" element={<Matches />} />
-              <Route path="messages" element={<Matches />} />
-              <Route path="chat/:matchId" element={<Chat />} />
-              <Route path="profile" element={<Profile />} />
-              <Route path="profile/edit" element={<EditProfile />} />
-              <Route path="settings" element={<Settings />} />
-              <Route path="subscription" element={<Subscription />} />
-              <Route path="subscription/callback" element={<SubscriptionCallback />} />
-              <Route path="consumables" element={<Consumables />} />
-              <Route path="verify" element={<FaceVerification />} />
-            </Route>
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
-  </QueryClientProvider>
+  <HelmetProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/verify-otp" element={<VerifyOTP />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/onboarding" element={<Onboarding />} />
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/app" element={<AppLayout />}>
+                <Route index element={<Discover />} />
+                <Route path="feeds" element={<Feeds />} />
+                <Route path="matches" element={<Matches />} />
+                <Route path="messages" element={<Matches />} />
+                <Route path="chat/:matchId" element={<Chat />} />
+                <Route path="profile" element={<Profile />} />
+                <Route path="profile/edit" element={<EditProfile />} />
+                <Route path="settings" element={<Settings />} />
+                <Route path="subscription" element={<Subscription />} />
+                <Route path="subscription/callback" element={<SubscriptionCallback />} />
+                <Route path="consumables" element={<Consumables />} />
+                <Route path="verify" element={<FaceVerification />} />
+              </Route>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  </HelmetProvider>
 );
 
 export default App;

@@ -12,7 +12,7 @@ const Footer = () => {
               <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center">
                 <Heart className="w-5 h-5 text-primary-foreground fill-primary-foreground" />
               </div>
-              <span className="text-xl font-bold">MatchLy</span>
+              <span className="text-xl font-bold">BexMatch</span>
             </Link>
             <p className="text-muted-foreground text-sm">
               Find meaningful connections with people who share your passions.
@@ -50,7 +50,7 @@ const Footer = () => {
 
         <div className="pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} MatchLy. All rights reserved.
+            © {new Date().getFullYear()} BexMatch. All rights reserved.
           </p>
           <p className="text-sm text-muted-foreground flex items-center gap-1">
             Made with <Heart className="w-4 h-4 text-primary fill-primary" /> for finding love

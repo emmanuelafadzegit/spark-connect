@@ -1,6 +1,4 @@
-import { Capacitor } from '@capacitor/core';
-
-export type Platform = 'web' | 'android' | 'ios';
+export type Platform = 'web';
 export type PurchaseType = 'subscription' | 'consumable' | 'physical';
 
 export interface Product {
@@ -10,9 +8,6 @@ export interface Product {
   price: number;
   currency: string;
   type: PurchaseType;
-  // IAP identifiers
-  googleProductId?: string;
-  appleProductId?: string;
 }
 
 // Product catalog
@@ -25,8 +20,6 @@ export const PRODUCTS: Record<string, Product> = {
     price: 20,
     currency: 'USD',
     type: 'subscription',
-    googleProductId: 'matchly_premium_monthly',
-    appleProductId: 'matchly_premium_monthly',
   },
   premium_plus: {
     id: 'premium_plus',
@@ -35,8 +28,6 @@ export const PRODUCTS: Record<string, Product> = {
     price: 45,
     currency: 'USD',
     type: 'subscription',
-    googleProductId: 'matchly_premium_plus_monthly',
-    appleProductId: 'matchly_premium_plus_monthly',
   },
   // Consumables
   boost_1: {
@@ -46,8 +37,6 @@ export const PRODUCTS: Record<string, Product> = {
     price: 5,
     currency: 'USD',
     type: 'consumable',
-    googleProductId: 'matchly_boost_1',
-    appleProductId: 'matchly_boost_1',
   },
   boost_5: {
     id: 'boost_5',
@@ -56,8 +45,6 @@ export const PRODUCTS: Record<string, Product> = {
     price: 20,
     currency: 'USD',
     type: 'consumable',
-    googleProductId: 'matchly_boost_5',
-    appleProductId: 'matchly_boost_5',
   },
   super_like_5: {
     id: 'super_like_5',
@@ -66,8 +53,6 @@ export const PRODUCTS: Record<string, Product> = {
     price: 10,
     currency: 'USD',
     type: 'consumable',
-    googleProductId: 'matchly_super_like_5',
-    appleProductId: 'matchly_super_like_5',
   },
   rewind_5: {
     id: 'rewind_5',
@@ -76,48 +61,26 @@ export const PRODUCTS: Record<string, Product> = {
     price: 8,
     currency: 'USD',
     type: 'consumable',
-    googleProductId: 'matchly_rewind_5',
-    appleProductId: 'matchly_rewind_5',
   },
 };
 
 /**
- * Get the current platform
+ * Get the current platform - always web since no native apps
  */
 export function getPlatform(): Platform {
-  const platform = Capacitor.getPlatform();
-  if (platform === 'android') return 'android';
-  if (platform === 'ios') return 'ios';
   return 'web';
 }
 
 /**
- * Check if running in a native app
+ * Check if running in a native app - always false
  */
 export function isNativeApp(): boolean {
-  return Capacitor.isNativePlatform();
+  return false;
 }
 
 /**
- * Determine if we should use IAP for a given purchase type
- * - Web: Always use Paystack
- * - Native + Digital (subscription/consumable): Use IAP
- * - Native + Physical: Use Paystack
+ * Always use Paystack for web
  */
-export function shouldUseIAP(purchaseType: PurchaseType): boolean {
-  if (!isNativeApp()) return false;
-  return purchaseType === 'subscription' || purchaseType === 'consumable';
-}
-
-/**
- * Get the native product ID for the current platform
- */
-export function getNativeProductId(productId: string): string | null {
-  const product = PRODUCTS[productId];
-  if (!product) return null;
-  
-  const platform = getPlatform();
-  if (platform === 'android') return product.googleProductId || null;
-  if (platform === 'ios') return product.appleProductId || null;
-  return null;
+export function shouldUsePaystack(): boolean {
+  return true;
 }

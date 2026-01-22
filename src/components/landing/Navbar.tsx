@@ -32,7 +32,7 @@ const Navbar = () => {
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${isScrolled ? 'bg-gradient-primary' : 'bg-white/20 backdrop-blur-sm'}`}>
                 <Heart className={`w-5 h-5 ${isScrolled ? 'text-primary-foreground' : 'text-white'} fill-current`} />
               </div>
-              <span className={`text-xl font-bold ${isScrolled ? 'text-foreground' : 'text-white'}`}>MatchLy</span>
+              <span className={`text-xl font-bold ${isScrolled ? 'text-foreground' : 'text-white'}`}>BexMatch</span>
             </Link>
 
             {/* Desktop Menu */}

@@ -187,7 +187,7 @@ const Settings = () => {
 
         {/* Version */}
         <p className="text-center text-xs text-muted-foreground">
-          Matchly v1.0.0
+          BexMatch v1.0.0
         </p>
       </div>
     </div>

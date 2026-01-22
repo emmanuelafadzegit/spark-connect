@@ -57,7 +57,7 @@ const AppLayout = () => {
             <div className="w-9 h-9 rounded-xl bg-gradient-primary flex items-center justify-center">
               <Heart className="w-5 h-5 text-primary-foreground fill-primary-foreground" />
             </div>
-            <span className="text-xl font-bold">MatchLy</span>
+            <span className="text-xl font-bold">BexMatch</span>
           </div>
           <button
             onClick={handleSignOut}

@@ -41,7 +41,7 @@ const CTASection = () => {
             Your Next Chapter Starts Here
           </h2>
           <p className="text-lg md:text-xl text-white/80 mb-10 max-w-2xl mx-auto">
-            Join millions of singles who have found love on MatchLy. 
+            Join millions of singles who have found love on BexMatch. 
             Your perfect match could be just one swipe away.
           </p>
 

@@ -1,14 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { Zap, Star, Undo2, ArrowLeft, Loader2, Smartphone } from "lucide-react";
+import { Zap, Star, Undo2, ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { getPlatform, isNativeApp, PRODUCTS, shouldUseIAP } from "@/lib/payment";
-import { iapService } from "@/lib/iap";
 import { supabase } from "@/integrations/supabase/client";
 
 interface ConsumableItem {
@@ -59,48 +56,24 @@ const Consumables = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [processing, setProcessing] = useState<string | null>(null);
-  const platform = getPlatform();
-  const isNative = isNativeApp();
-
-  useEffect(() => {
-    if (isNative) {
-      iapService.initialize().catch(console.error);
-    }
-  }, [isNative]);
 
   const handlePurchase = async (itemId: string) => {
     setProcessing(itemId);
 
     try {
-      const product = PRODUCTS[itemId];
-      const useIAP = shouldUseIAP(product?.type || 'consumable');
+      // Web Paystack flow for consumables
+      const { data, error } = await supabase.functions.invoke("paystack-initialize", {
+        body: { 
+          plan: itemId, 
+          email: user?.email,
+          type: 'consumable'
+        },
+      });
 
-      if (useIAP) {
-        // Native IAP flow
-        const result = await iapService.purchaseConsumable(
-          platform === 'ios' ? product.appleProductId! : product.googleProductId!
-        );
+      if (error) throw error;
 
-        if (result.success) {
-          toast.success("Purchase successful!");
-        } else {
-          toast.error(result.error || "Purchase failed");
-        }
-      } else {
-        // Web Paystack flow
-        const { data, error } = await supabase.functions.invoke("paystack-initialize", {
-          body: { 
-            plan: itemId, 
-            email: user?.email,
-            type: 'consumable'
-          },
-        });
-
-        if (error) throw error;
-
-        if (data.authorization_url) {
-          window.location.href = data.authorization_url;
-        }
+      if (data.authorization_url) {
+        window.location.href = data.authorization_url;
       }
     } catch (error: any) {
       console.error("Purchase error:", error);
@@ -126,16 +99,6 @@ const Consumables = () => {
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        {/* Platform indicator */}
-        {isNative && (
-          <Alert className="mb-6">
-            <Smartphone className="h-4 w-4" />
-            <AlertDescription>
-              {platform === 'ios' ? 'Apple App Store' : 'Google Play'} billing will be used.
-            </AlertDescription>
-          </Alert>
-        )}
-
         {/* Consumables Grid */}
         <div className="grid gap-4 sm:grid-cols-2 max-w-2xl mx-auto">
           {consumables.map((item, index) => (

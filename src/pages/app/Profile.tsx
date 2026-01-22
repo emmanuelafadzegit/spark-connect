@@ -1,16 +1,26 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Camera, MapPin, Edit2, Settings, Shield, Crown, LogOut, ChevronRight, Heart } from "lucide-react";
+import { Camera, MapPin, Edit2, Settings, Shield, Crown, LogOut, ChevronRight, Heart, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { signOut, updateProfile, uploadProfilePhoto, addProfilePhoto } from "@/lib/api";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const Profile = () => {
   const { profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [uploading, setUploading] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const checkAdmin = async () => {
+      const { data } = await supabase.rpc("is_admin");
+      setIsAdmin(!!data);
+    };
+    checkAdmin();
+  }, []);
 
   const handleSignOut = async () => {
     await signOut();
@@ -58,6 +68,7 @@ const Profile = () => {
     { icon: Shield, label: "Verify Your Face", to: "/app/verify" },
     { icon: Settings, label: "Settings", to: "/app/settings" },
     { icon: Crown, label: "Get Premium", to: "/app/subscription", highlight: true },
+    ...(isAdmin ? [{ icon: ShieldCheck, label: "Admin Dashboard", to: "/admin" }] : []),
   ];
 
   return (
@@ -183,7 +194,7 @@ const Profile = () => {
 
       {/* Footer */}
       <p className="text-center text-sm text-muted-foreground mt-8 flex items-center justify-center gap-1">
-        Made with <Heart className="w-3 h-3 text-primary fill-primary" /> by MatchLy
+        Made with <Heart className="w-3 h-3 text-primary fill-primary" /> by BexMatch
       </p>
     </div>
   );
