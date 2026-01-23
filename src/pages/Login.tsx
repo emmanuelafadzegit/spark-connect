@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mail, Lock, ArrowLeft, Loader2 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { signIn } from "@/lib/api";
 import { toast } from "sonner";
 import BexMatchLogo from "@/components/BexMatchLogo";
@@ -14,6 +14,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,7 +29,10 @@ const Login = () => {
     }
 
     toast.success("Welcome back!");
-    navigate("/app");
+    
+    // Check for redirect parameter (e.g., from pricing page)
+    const redirectTo = searchParams.get("redirect");
+    navigate(redirectTo || "/app");
   };
 
   return (

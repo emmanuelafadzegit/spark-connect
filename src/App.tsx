@@ -14,6 +14,9 @@ import ResetPassword from "./pages/ResetPassword";
 import Onboarding from "./pages/Onboarding";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
+import About from "./pages/About";
+import Pricing from "./pages/Pricing";
+import Safety from "./pages/Safety";
 import AppLayout from "./components/app/AppLayout";
 import Discover from "./pages/app/Discover";
 import Matches from "./pages/app/Matches";
@@ -49,6 +52,9 @@ const App = () => (
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/privacy" element={<Privacy />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/pricing" element={<Pricing />} />
+              <Route path="/safety" element={<Safety />} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/app" element={<AppLayout />}>
                 <Route index element={<Discover />} />
