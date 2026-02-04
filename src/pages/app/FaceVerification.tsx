@@ -97,22 +97,54 @@ const FaceVerification = () => {
       // Store stream reference for cleanup
       streamRef.current = stream;
       
+      // Move to capture step first so video element is rendered
+      setStep("capture");
+      
+      // Wait for next tick to ensure video element is in DOM
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       // Attach stream to video element
       if (videoRef.current) {
-        videoRef.current.srcObject = stream;
+        const video = videoRef.current;
+        video.srcObject = stream;
         
-        // Ensure video plays (important for mobile browsers)
+        // Wait for video metadata to load before playing
+        // This fixes the black screen issue on many browsers
+        await new Promise<void>((resolve, reject) => {
+          const onLoadedMetadata = () => {
+            video.removeEventListener('loadedmetadata', onLoadedMetadata);
+            video.removeEventListener('error', onError);
+            console.log("Video metadata loaded, dimensions:", video.videoWidth, "x", video.videoHeight);
+            resolve();
+          };
+          const onError = () => {
+            video.removeEventListener('loadedmetadata', onLoadedMetadata);
+            video.removeEventListener('error', onError);
+            reject(new Error("Video failed to load"));
+          };
+          
+          // If metadata already loaded, resolve immediately
+          if (video.readyState >= 1) {
+            console.log("Video already has metadata");
+            resolve();
+          } else {
+            video.addEventListener('loadedmetadata', onLoadedMetadata);
+            video.addEventListener('error', onError);
+          }
+        });
+        
+        // Explicitly call play() after metadata is loaded
+        // This is critical for iOS Safari and some Android browsers
         try {
-          await videoRef.current.play();
+          await video.play();
           console.log("Video playing successfully");
         } catch (playError) {
           console.error("Video play error:", playError);
-          // On some mobile browsers, play() might fail but video still works
+          // On some mobile browsers, play() might fail but video still shows
         }
       }
       
       setIsCapturing(true);
-      setStep("capture");
       
     } catch (error) {
       console.error("Camera access error:", error);
