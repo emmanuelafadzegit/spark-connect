@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.verify-apple-receipt]
 verify_jwt = false
+
+[functions.verify-face]
+verify_jwt = false
