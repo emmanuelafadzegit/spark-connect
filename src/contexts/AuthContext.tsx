@@ -18,27 +18,53 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<ProfileWithPhotos | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [initializing, setInitializing] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(false);
+
+  const loading = initializing || profileLoading;
 
   const refreshProfile = async () => {
-    const { data } = await getMyProfile();
-    setProfile(data);
+    setProfileLoading(true);
+    try {
+      const { data, error } = await getMyProfile();
+      if (error) {
+        console.error('[auth] Failed to refresh profile', error);
+        setProfile(null);
+        return;
+      }
+      setProfile(data);
+    } finally {
+      setProfileLoading(false);
+    }
   };
 
   useEffect(() => {
     let isMounted = true;
     
     // FIRST check for existing session
-    supabase.auth.getSession().then(async ({ data: { session: existingSession } }) => {
-      if (!isMounted) return;
-      
-      if (existingSession) {
+    (async () => {
+      try {
+        const { data: { session: existingSession } } = await supabase.auth.getSession();
+        if (!isMounted) return;
+
         setSession(existingSession);
-        setUser(existingSession.user);
-        await refreshProfile();
+        setUser(existingSession?.user ?? null);
+
+        if (existingSession?.user) {
+          await refreshProfile();
+        } else {
+          setProfile(null);
+        }
+      } catch (e) {
+        console.error('[auth] Failed to initialize session', e);
+        if (!isMounted) return;
+        setSession(null);
+        setUser(null);
+        setProfile(null);
+      } finally {
+        if (isMounted) setInitializing(false);
       }
-      setLoading(false);
-    });
+    })();
 
     // THEN set up auth state listener for future changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(

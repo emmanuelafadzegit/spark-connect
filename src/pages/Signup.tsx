@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { signUp } from "@/lib/api";
 import { toast } from "sonner";
 import BexMatchLogo from "@/components/BexMatchLogo";
 import { lovable } from "@/integrations/lovable";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Signup = () => {
   const [name, setName] = useState("");
@@ -18,6 +19,14 @@ const Signup = () => {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
   const navigate = useNavigate();
+  const { user, loading: authLoading, hasProfile } = useAuth();
+
+  // If already signed in, don't keep the user on /signup.
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) return;
+    navigate(hasProfile ? "/app" : "/onboarding", { replace: true });
+  }, [authLoading, user, hasProfile, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,19 +38,29 @@ const Signup = () => {
 
     setLoading(true);
 
-    const { error } = await signUp(email, password);
+    try {
+      const { data, error } = await signUp(email, password);
 
-    if (error) {
-      toast.error(error.message || "Failed to create account");
+      if (error) {
+        toast.error(error.message || "Failed to create account");
+        return;
+      }
+
+      // Store name temporarily for onboarding
+      localStorage.setItem('onboarding_name', name);
+
+      // If email confirmation is required, there may be no active session yet.
+      if (!data?.session) {
+        toast.success("Check your email to confirm your account, then sign in.");
+        navigate("/login?redirect=/onboarding", { replace: true });
+        return;
+      }
+
+      toast.success("Account created! Let's set up your profile.");
+      navigate("/onboarding", { replace: true });
+    } finally {
       setLoading(false);
-      return;
     }
-
-    // Store name temporarily for onboarding
-    localStorage.setItem('onboarding_name', name);
-    
-    toast.success("Account created! Let's set up your profile.");
-    navigate("/onboarding");
   };
 
   const handleGoogleSignIn = async () => {

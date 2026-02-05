@@ -15,19 +15,35 @@ const Login = forwardRef<HTMLDivElement>((_, ref) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user } = useAuth();
+  const { user, hasProfile, loading: authLoading } = useAuth();
 
   // If the user is already signed in, never keep them on /login.
   useEffect(() => {
-    if (user) {
-      const redirectTo = searchParams.get("redirect");
-      navigate(redirectTo || "/app", { replace: true });
-    }
-  }, [user, navigate, searchParams]);
+    if (authLoading) return;
+    if (!user) return;
+
+    const redirectTo = searchParams.get("redirect");
+    // Route rules:
+    // - Authenticated + profile complete => app (or redirect)
+    // - Authenticated + profile incomplete => onboarding
+    navigate(hasProfile ? (redirectTo || "/app") : "/onboarding", { replace: true });
+    setRedirecting(false);
+  }, [authLoading, user, hasProfile, navigate, searchParams]);
+
+  // If sign-in succeeded but auth state never materializes, stop the spinner and show feedback.
+  useEffect(() => {
+    if (!redirecting) return;
+    const t = window.setTimeout(() => {
+      setRedirecting(false);
+      toast.error("Sign-in succeeded but the session didn't load. Please refresh and try again.");
+    }, 10000);
+    return () => window.clearTimeout(t);
+  }, [redirecting]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,9 +58,8 @@ const Login = forwardRef<HTMLDivElement>((_, ref) => {
       }
 
       toast.success("Welcome back! Redirecting…");
-      const redirectTo = searchParams.get("redirect");
-      // Navigate immediately; route guards will handle onboarding vs app.
-      navigate(redirectTo || "/app", { replace: true });
+      // Let AuthContext update first; useEffect will route deterministically.
+      setRedirecting(true);
     } finally {
       // Never let the UI get stuck in an infinite "Signing in..." state.
       setLoading(false);
@@ -138,11 +153,11 @@ const Login = forwardRef<HTMLDivElement>((_, ref) => {
               </Link>
             </div>
 
-            <Button type="submit" variant="hero" size="lg" className="w-full" disabled={loading}>
-              {loading ? (
+            <Button type="submit" variant="hero" size="lg" className="w-full" disabled={loading || redirecting}>
+              {loading || redirecting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Signing in...
+                  {redirecting ? "Redirecting..." : "Signing in..."}
                 </>
               ) : (
                 "Sign In"
