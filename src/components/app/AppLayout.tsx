@@ -1,45 +1,18 @@
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { MessageCircle, User, Flame, LogOut, Grid3X3, Heart } from "lucide-react";
 import { motion } from "framer-motion";
-import { useAuth } from "@/contexts/AuthContext";
 import { signOut } from "@/lib/api";
 import { toast } from "sonner";
-import { useEffect } from "react";
 import BexMatchLogo from "@/components/BexMatchLogo";
 
 const AppLayout = () => {
-  const { user, hasProfile, loading } = useAuth();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!loading) {
-      if (!user) {
-        navigate("/login");
-      } else if (!hasProfile) {
-        navigate("/onboarding");
-      }
-    }
-  }, [user, hasProfile, loading, navigate]);
 
   const handleSignOut = async () => {
     await signOut();
     toast.success("Signed out successfully");
     navigate("/");
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center animate-pulse">
-          <Heart className="w-6 h-6 text-primary-foreground fill-primary-foreground" />
-        </div>
-      </div>
-    );
-  }
-
-  if (!user || !hasProfile) {
-    return null;
-  }
 
   const navItems = [
     { to: "/app", icon: Flame, label: "Discover", end: true },

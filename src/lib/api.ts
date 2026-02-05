@@ -197,7 +197,8 @@ export const createProfile = async (profile: Omit<ProfileInsert, 'user_id'>) => 
 
   const { data, error } = await supabase
     .from('profiles')
-    .insert({ ...profile, user_id: user.id })
+    // Upsert prevents duplicate profile rows and allows onboarding to be safely re-run.
+    .upsert({ ...profile, user_id: user.id }, { onConflict: 'user_id' })
     .select()
     .single();
 
