@@ -1012,10 +1012,15 @@ export type Database = {
         Args: { _user_id: string }
         Returns: undefined
       }
+      get_my_looking_for: {
+        Args: never
+        Returns: Database["public"]["Enums"]["gender_type"][]
+      }
       get_subscription_tier: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["subscription_tier"]
       }
+      has_my_profile: { Args: never; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

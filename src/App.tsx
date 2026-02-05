@@ -4,7 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { Heart } from "lucide-react";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -34,6 +35,56 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+const AppRouter = () => {
+  const { loading } = useAuth();
+
+  // Wait for auth + profile checks before rendering routes to prevent flicker/loops.
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center animate-pulse">
+          <Heart className="w-6 h-6 text-primary-foreground fill-primary-foreground" />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/verify-otp" element={<VerifyOTP />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/onboarding" element={<Onboarding />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/safety" element={<Safety />} />
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/app" element={<AppLayout />}>
+          <Route index element={<Discover />} />
+          <Route path="feeds" element={<Feeds />} />
+          <Route path="matches" element={<Matches />} />
+          <Route path="messages" element={<Matches />} />
+          <Route path="chat/:matchId" element={<Chat />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="profile/edit" element={<EditProfile />} />
+          <Route path="settings" element={<Settings />} />
+          <Route path="subscription" element={<Subscription />} />
+          <Route path="subscription/callback" element={<SubscriptionCallback />} />
+          <Route path="consumables" element={<Consumables />} />
+          <Route path="verify" element={<FaceVerification />} />
+        </Route>
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </BrowserRouter>
+  );
+};
+
 const App = () => (
   <HelmetProvider>
     <QueryClientProvider client={queryClient}>
@@ -41,38 +92,7 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/verify-otp" element={<VerifyOTP />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/onboarding" element={<Onboarding />} />
-              <Route path="/terms" element={<Terms />} />
-              <Route path="/privacy" element={<Privacy />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/pricing" element={<Pricing />} />
-              <Route path="/safety" element={<Safety />} />
-              <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/app" element={<AppLayout />}>
-                <Route index element={<Discover />} />
-                <Route path="feeds" element={<Feeds />} />
-                <Route path="matches" element={<Matches />} />
-                <Route path="messages" element={<Matches />} />
-                <Route path="chat/:matchId" element={<Chat />} />
-                <Route path="profile" element={<Profile />} />
-                <Route path="profile/edit" element={<EditProfile />} />
-                <Route path="settings" element={<Settings />} />
-                <Route path="subscription" element={<Subscription />} />
-                <Route path="subscription/callback" element={<SubscriptionCallback />} />
-                <Route path="consumables" element={<Consumables />} />
-                <Route path="verify" element={<FaceVerification />} />
-              </Route>
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
+          <AppRouter />
         </TooltipProvider>
       </AuthProvider>
     </QueryClientProvider>
