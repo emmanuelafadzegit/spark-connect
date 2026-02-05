@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Lock, Eye, EyeOff, Loader2, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,20 +10,30 @@ import { supabase } from "@/integrations/supabase/client";
 
 const ResetPassword = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const resetToken = location.state?.resetToken || "";
-  const email = location.state?.email || "";
-  
+
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [sessionChecked, setSessionChecked] = useState(false);
 
-  if (!resetToken) {
-    navigate("/forgot-password");
-    return null;
-  }
+  // ✅ Ensure user arrived via Supabase recovery link
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+
+      if (!data.session) {
+        toast.error("Invalid or expired recovery link. Please try again.");
+        navigate("/forgot-password");
+        return;
+      }
+
+      setSessionChecked(true);
+    };
+
+    checkSession();
+  }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,27 +50,21 @@ const ResetPassword = () => {
 
     setLoading(true);
 
-    try {
-      const { data, error } = await supabase.functions.invoke("reset-password", {
-        body: { reset_token: resetToken, new_password: password },
-      });
+    const { error } = await supabase.auth.updateUser({
+      password,
+    });
 
-      if (error) throw error;
-
+    if (error) {
+      toast.error(error.message);
+    } else {
       setSuccess(true);
-      toast.success("Password updated successfully!");
-    } catch (error: any) {
-      console.error("Error:", error);
-      if (error.message?.includes("expired")) {
-        toast.error("Reset token expired. Please request a new OTP.");
-        navigate("/forgot-password");
-      } else {
-        toast.error(error.message || "Failed to reset password");
-      }
-    } finally {
-      setLoading(false);
+      toast.success("Password updated successfully");
     }
+
+    setLoading(false);
   };
+
+  if (!sessionChecked) return null;
 
   if (success) {
     return (
@@ -73,9 +77,9 @@ const ResetPassword = () => {
           <div className="w-20 h-20 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
             <CheckCircle className="w-10 h-10 text-primary" />
           </div>
-          <h1 className="text-3xl font-bold text-foreground">Password Reset!</h1>
+          <h1 className="text-3xl font-bold">Password Reset</h1>
           <p className="text-muted-foreground">
-            Your password has been successfully updated. You can now log in with your new password.
+            Your password has been updated successfully.
           </p>
           <Button
             variant="hero"
@@ -105,11 +109,7 @@ const ResetPassword = () => {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Start over
           </Link>
-          <h1 className="text-3xl font-bold text-foreground">New Password</h1>
-          <p className="text-muted-foreground mt-2">
-            Create a new password for<br />
-            <span className="font-medium text-foreground">{email}</span>
-          </p>
+          <h1 className="text-3xl font-bold">Create New Password</h1>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -120,7 +120,6 @@ const ResetPassword = () => {
               <Input
                 id="password"
                 type={showPassword ? "text" : "password"}
-                placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="pl-10 pr-10"
@@ -130,27 +129,22 @@ const ResetPassword = () => {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                className="absolute right-3 top-1/2 -translate-y-1/2"
               >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {showPassword ? <EyeOff /> : <Eye />}
               </button>
             </div>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="confirmPassword">Confirm Password</Label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                id="confirmPassword"
-                type={showPassword ? "text" : "password"}
-                placeholder="••••••••"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="pl-10"
-                required
-              />
-            </div>
+            <Input
+              id="confirmPassword"
+              type={showPassword ? "text" : "password"}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
           </div>
 
           <Button type="submit" variant="hero" size="lg" className="w-full" disabled={loading}>
