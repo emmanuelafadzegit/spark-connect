@@ -533,6 +533,7 @@ export type Database = {
           id: string
           is_online: boolean | null
           is_profile_complete: boolean | null
+          is_suspended: boolean | null
           is_verified: boolean | null
           is_visible: boolean | null
           job_title: string | null
@@ -564,6 +565,9 @@ export type Database = {
           show_sexual_orientation: boolean | null
           sleep_schedule: Database["public"]["Enums"]["sleep_schedule"] | null
           smoking: Database["public"]["Enums"]["smoking_status"] | null
+          suspended_at: string | null
+          suspended_by: string | null
+          suspension_reason: string | null
           updated_at: string
           user_id: string
           verification_photo_url: string | null
@@ -591,6 +595,7 @@ export type Database = {
           id?: string
           is_online?: boolean | null
           is_profile_complete?: boolean | null
+          is_suspended?: boolean | null
           is_verified?: boolean | null
           is_visible?: boolean | null
           job_title?: string | null
@@ -622,6 +627,9 @@ export type Database = {
           show_sexual_orientation?: boolean | null
           sleep_schedule?: Database["public"]["Enums"]["sleep_schedule"] | null
           smoking?: Database["public"]["Enums"]["smoking_status"] | null
+          suspended_at?: string | null
+          suspended_by?: string | null
+          suspension_reason?: string | null
           updated_at?: string
           user_id: string
           verification_photo_url?: string | null
@@ -649,6 +657,7 @@ export type Database = {
           id?: string
           is_online?: boolean | null
           is_profile_complete?: boolean | null
+          is_suspended?: boolean | null
           is_verified?: boolean | null
           is_visible?: boolean | null
           job_title?: string | null
@@ -680,6 +689,9 @@ export type Database = {
           show_sexual_orientation?: boolean | null
           sleep_schedule?: Database["public"]["Enums"]["sleep_schedule"] | null
           smoking?: Database["public"]["Enums"]["smoking_status"] | null
+          suspended_at?: string | null
+          suspended_by?: string | null
+          suspension_reason?: string | null
           updated_at?: string
           user_id?: string
           verification_photo_url?: string | null

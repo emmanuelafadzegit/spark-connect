@@ -28,11 +28,12 @@ const relationshipIntentOptions: { value: RelationshipIntent; label: string; ico
 ];
 
 const Onboarding = () => {
-  const { user, hasProfile, refreshProfile } = useAuth();
+  const { user, hasProfile, loading: authLoading, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [interests, setInterests] = useState<Array<{ id: string; name: string; emoji: string | null; category: string | null }>>([]);
+  const [redirectChecked, setRedirectChecked] = useState(false);
   
   // Basic info
   const [displayName, setDisplayName] = useState("");
@@ -67,19 +68,26 @@ const Onboarding = () => {
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
 
+  // Redirect logic - run once after auth loading completes
   useEffect(() => {
+    if (authLoading || redirectChecked) return;
+    
+    setRedirectChecked(true);
+    
     // If user not logged in, redirect to signup
     if (!user) {
-      navigate("/signup");
+      navigate("/signup", { replace: true });
       return;
     }
 
     // If user already has a complete profile, redirect to app
     if (hasProfile) {
-      navigate("/app");
+      toast.success("Welcome back!");
+      navigate("/app", { replace: true });
       return;
     }
 
+    // User is logged in but doesn't have a profile - load onboarding data
     const savedName = localStorage.getItem('onboarding_name');
     if (savedName) {
       setDisplayName(savedName);
@@ -89,7 +97,7 @@ const Onboarding = () => {
     getInterests().then(({ data }) => {
       setInterests(data);
     });
-  }, [user, hasProfile, navigate]);
+  }, [authLoading, user, hasProfile, navigate, redirectChecked]);
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -215,13 +223,30 @@ const Onboarding = () => {
 
       await refreshProfile();
       toast.success("Profile created! Start swiping!");
-      navigate("/app");
+      navigate("/app", { replace: true });
     } catch (error: any) {
       toast.error(error.message || "Failed to create profile");
     } finally {
       setLoading(false);
     }
   };
+
+  // Show loading while checking auth
+  if (authLoading || !redirectChecked) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-secondary via-background to-secondary/50">
+        <div className="animate-pulse flex flex-col items-center gap-4">
+          <BexMatchLogo size="lg" showText={false} />
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render onboarding if user has profile (will redirect)
+  if (hasProfile) {
+    return null;
+  }
 
   const totalSteps = 5;
 

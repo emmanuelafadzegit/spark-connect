@@ -2,17 +2,29 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
   Users, ShieldCheck, Crown, AlertTriangle, TrendingUp, 
-  Check, X, Eye, MessageSquare, Ban, MoreVertical 
+  Check, X, Eye, MessageSquare, Ban, MoreVertical, Search,
+  RefreshCw, UserX, UserCheck, ArrowLeft, Calendar, Filter
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
   DropdownMenuItem, 
-  DropdownMenuTrigger 
+  DropdownMenuTrigger,
+  DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -27,6 +39,7 @@ interface Stats {
   activeReports: number;
   newUsersToday: number;
   totalMatches: number;
+  suspendedUsers: number;
 }
 
 interface UserRow {
@@ -39,6 +52,9 @@ interface UserRow {
   verification_photo_url: string | null;
   created_at: string;
   is_visible: boolean;
+  is_suspended: boolean;
+  suspended_at: string | null;
+  suspension_reason: string | null;
   profile_photos: Array<{ photo_url: string; is_primary: boolean }>;
 }
 
@@ -59,13 +75,53 @@ const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [stats, setStats] = useState<Stats | null>(null);
   const [users, setUsers] = useState<UserRow[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<UserRow[]>([]);
   const [pendingVerifications, setPendingVerifications] = useState<UserRow[]>([]);
   const [reports, setReports] = useState<ReportRow[]>([]);
   const [activeTab, setActiveTab] = useState("overview");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [userFilter, setUserFilter] = useState<"all" | "suspended" | "verified" | "unverified">("all");
+  
+  // Suspension dialog
+  const [suspendDialogOpen, setSuspendDialogOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<UserRow | null>(null);
+  const [suspensionReason, setSuspensionReason] = useState("");
 
   useEffect(() => {
     checkAdminAndLoad();
   }, [user]);
+
+  useEffect(() => {
+    filterUsers();
+  }, [users, searchQuery, userFilter]);
+
+  const filterUsers = () => {
+    let filtered = [...users];
+    
+    // Apply search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(u => 
+        u.display_name.toLowerCase().includes(query) ||
+        u.city?.toLowerCase().includes(query)
+      );
+    }
+    
+    // Apply status filter
+    switch (userFilter) {
+      case "suspended":
+        filtered = filtered.filter(u => u.is_suspended);
+        break;
+      case "verified":
+        filtered = filtered.filter(u => u.is_verified);
+        break;
+      case "unverified":
+        filtered = filtered.filter(u => !u.is_verified);
+        break;
+    }
+    
+    setFilteredUsers(filtered);
+  };
 
   const checkAdminAndLoad = async () => {
     if (!user) {
@@ -73,7 +129,6 @@ const AdminDashboard = () => {
       return;
     }
 
-    // Check admin role via database function
     const { data: roleData, error: roleError } = await supabase.rpc("is_admin");
     
     if (roleError || !roleData) {
@@ -90,7 +145,6 @@ const AdminDashboard = () => {
     setLoading(true);
 
     try {
-      // Load stats
       const [
         { count: totalUsers },
         { count: premiumUsers },
@@ -98,6 +152,7 @@ const AdminDashboard = () => {
         { count: reportCount },
         { count: todayUsers },
         { count: matchCount },
+        { count: suspendedCount },
       ] = await Promise.all([
         supabase.from("profiles").select("*", { count: "exact", head: true }),
         supabase.from("subscriptions").select("*", { count: "exact", head: true }).neq("tier", "free"),
@@ -105,6 +160,7 @@ const AdminDashboard = () => {
         supabase.from("reports").select("*", { count: "exact", head: true }).eq("status", "pending"),
         supabase.from("profiles").select("*", { count: "exact", head: true }).gte("created_at", new Date().toISOString().split("T")[0]),
         supabase.from("matches").select("*", { count: "exact", head: true }),
+        supabase.from("profiles").select("*", { count: "exact", head: true }).eq("is_suspended", true),
       ]);
 
       setStats({
@@ -114,17 +170,16 @@ const AdminDashboard = () => {
         activeReports: reportCount || 0,
         newUsersToday: todayUsers || 0,
         totalMatches: matchCount || 0,
+        suspendedUsers: suspendedCount || 0,
       });
 
-      // Load users
       const { data: usersData } = await supabase
         .from("profiles")
         .select("*, profile_photos(photo_url, is_primary)")
         .order("created_at", { ascending: false })
-        .limit(50);
+        .limit(100);
       setUsers((usersData as UserRow[]) || []);
 
-      // Load pending verifications
       const { data: verifyData } = await supabase
         .from("profiles")
         .select("*, profile_photos(photo_url, is_primary)")
@@ -132,7 +187,6 @@ const AdminDashboard = () => {
         .order("verification_submitted_at", { ascending: true });
       setPendingVerifications((verifyData as UserRow[]) || []);
 
-      // Load reports
       const { data: reportsData } = await supabase
         .from("reports")
         .select("*")
@@ -186,25 +240,93 @@ const AdminDashboard = () => {
     loadDashboardData();
   };
 
-  const handleBanUser = async (userId: string) => {
+  const openSuspendDialog = (userRow: UserRow) => {
+    setSelectedUser(userRow);
+    setSuspensionReason("");
+    setSuspendDialogOpen(true);
+  };
+
+  const handleSuspendUser = async () => {
+    if (!selectedUser) return;
+    
+    const { error } = await supabase
+      .from("profiles")
+      .update({ 
+        is_suspended: true,
+        suspended_at: new Date().toISOString(),
+        suspended_by: user?.id,
+        suspension_reason: suspensionReason || "Violated community guidelines"
+      })
+      .eq("user_id", selectedUser.user_id);
+
+    if (error) {
+      toast.error("Failed to suspend user");
+      return;
+    }
+
+    toast.success("User suspended. They can no longer swipe, message, or post.");
+    setSuspendDialogOpen(false);
+    setSelectedUser(null);
+    loadDashboardData();
+  };
+
+  const handleUnsuspendUser = async (userId: string) => {
+    const { error } = await supabase
+      .from("profiles")
+      .update({ 
+        is_suspended: false,
+        suspended_at: null,
+        suspended_by: null,
+        suspension_reason: null
+      })
+      .eq("user_id", userId);
+
+    if (error) {
+      toast.error("Failed to unsuspend user");
+      return;
+    }
+
+    toast.success("User unsuspended");
+    loadDashboardData();
+  };
+
+  const handleHideUser = async (userId: string) => {
     const { error } = await supabase
       .from("profiles")
       .update({ is_visible: false })
       .eq("user_id", userId);
 
     if (error) {
-      toast.error("Failed to ban user");
+      toast.error("Failed to hide user");
       return;
     }
 
-    toast.success("User banned");
+    toast.success("User hidden from discovery");
+    loadDashboardData();
+  };
+
+  const handleUnhideUser = async (userId: string) => {
+    const { error } = await supabase
+      .from("profiles")
+      .update({ is_visible: true })
+      .eq("user_id", userId);
+
+    if (error) {
+      toast.error("Failed to unhide user");
+      return;
+    }
+
+    toast.success("User visible in discovery again");
     loadDashboardData();
   };
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse">Loading admin dashboard...</div>
+        <div className="animate-pulse flex flex-col items-center gap-2">
+          <RefreshCw className="w-8 h-8 animate-spin text-primary" />
+          <p>Loading admin dashboard...</p>
+        </div>
       </div>
     );
   }
@@ -213,9 +335,9 @@ const AdminDashboard = () => {
     return null;
   }
 
-  const getProfilePhoto = (user: UserRow) => {
-    const primary = user.profile_photos?.find(p => p.is_primary);
-    return primary?.photo_url || user.profile_photos?.[0]?.photo_url;
+  const getProfilePhoto = (userRow: UserRow) => {
+    const primary = userRow.profile_photos?.find(p => p.is_primary);
+    return primary?.photo_url || userRow.profile_photos?.[0]?.photo_url;
   };
 
   return (
@@ -223,12 +345,18 @@ const AdminDashboard = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-            <p className="text-muted-foreground">Manage users, verifications, and reports</p>
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={() => navigate("/app")}>
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+              <p className="text-muted-foreground">Manage users, verifications, and reports</p>
+            </div>
           </div>
-          <Button variant="outline" onClick={() => navigate("/app")}>
-            Back to App
+          <Button variant="outline" onClick={loadDashboardData} className="gap-2">
+            <RefreshCw className="w-4 h-4" />
+            Refresh
           </Button>
         </div>
 
@@ -262,7 +390,7 @@ const AdminDashboard = () => {
         </div>
 
         {/* Quick Stats */}
-        <div className="grid gap-4 md:grid-cols-2 mb-8">
+        <div className="grid gap-4 md:grid-cols-3 mb-8">
           <Card>
             <CardContent className="flex items-center gap-4 p-6">
               <TrendingUp className="w-8 h-8 text-success" />
@@ -278,6 +406,15 @@ const AdminDashboard = () => {
               <div>
                 <p className="text-xl font-bold">{stats?.totalMatches || 0}</p>
                 <p className="text-sm text-muted-foreground">Total matches made</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="flex items-center gap-4 p-6">
+              <UserX className="w-8 h-8 text-destructive" />
+              <div>
+                <p className="text-xl font-bold">{stats?.suspendedUsers || 0}</p>
+                <p className="text-sm text-muted-foreground">Suspended users</p>
               </div>
             </CardContent>
           </Card>
@@ -309,59 +446,139 @@ const AdminDashboard = () => {
           <TabsContent value="overview">
             <Card>
               <CardHeader>
-                <CardTitle>Recent Users</CardTitle>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <CardTitle>User Management</CardTitle>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Search users..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-9 w-full sm:w-64"
+                      />
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="gap-2">
+                          <Filter className="w-4 h-4" />
+                          {userFilter === "all" ? "All Users" : 
+                           userFilter === "suspended" ? "Suspended" :
+                           userFilter === "verified" ? "Verified" : "Unverified"}
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem onClick={() => setUserFilter("all")}>
+                          All Users
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setUserFilter("suspended")}>
+                          Suspended Only
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setUserFilter("verified")}>
+                          Verified Only
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setUserFilter("unverified")}>
+                          Unverified Only
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {users.map((u) => (
-                    <div
-                      key={u.id}
-                      className="flex items-center justify-between p-4 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full overflow-hidden bg-muted">
-                          {getProfilePhoto(u) ? (
-                            <img
-                              src={getProfilePhoto(u)}
-                              alt={u.display_name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-xl">
-                              👤
-                            </div>
-                          )}
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">{u.display_name}</span>
-                            {u.is_verified && (
-                              <ShieldCheck className="w-4 h-4 text-success" />
-                            )}
-                            {!u.is_visible && (
-                              <Badge variant="destructive">Banned</Badge>
+                  {filteredUsers.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No users found
+                    </div>
+                  ) : (
+                    filteredUsers.map((u) => (
+                      <div
+                        key={u.id}
+                        className={`flex items-center justify-between p-4 rounded-xl transition-colors ${
+                          u.is_suspended 
+                            ? 'bg-destructive/10 border border-destructive/20' 
+                            : 'bg-muted/50 hover:bg-muted'
+                        }`}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-full overflow-hidden bg-muted">
+                            {getProfilePhoto(u) ? (
+                              <img
+                                src={getProfilePhoto(u)}
+                                alt={u.display_name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-xl">
+                                👤
+                              </div>
                             )}
                           </div>
-                          <p className="text-sm text-muted-foreground">
-                            {u.city || "Unknown"} • Joined {format(new Date(u.created_at), "MMM d, yyyy")}
-                          </p>
+                          <div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-medium">{u.display_name}</span>
+                              {u.is_verified && (
+                                <ShieldCheck className="w-4 h-4 text-success" />
+                              )}
+                              {u.is_suspended && (
+                                <Badge variant="destructive" className="gap-1">
+                                  <Ban className="w-3 h-3" />
+                                  Suspended
+                                </Badge>
+                              )}
+                              {!u.is_visible && !u.is_suspended && (
+                                <Badge variant="secondary">Hidden</Badge>
+                              )}
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              {u.city || "Unknown"} • Joined {format(new Date(u.created_at), "MMM d, yyyy")}
+                            </p>
+                            {u.is_suspended && u.suspension_reason && (
+                              <p className="text-xs text-destructive mt-1">
+                                Reason: {u.suspension_reason}
+                              </p>
+                            )}
+                          </div>
                         </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreVertical className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            {u.is_suspended ? (
+                              <DropdownMenuItem onClick={() => handleUnsuspendUser(u.user_id)}>
+                                <UserCheck className="w-4 h-4 mr-2" />
+                                Unsuspend User
+                              </DropdownMenuItem>
+                            ) : (
+                              <DropdownMenuItem 
+                                onClick={() => openSuspendDialog(u)}
+                                className="text-destructive"
+                              >
+                                <Ban className="w-4 h-4 mr-2" />
+                                Suspend User
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuSeparator />
+                            {u.is_visible ? (
+                              <DropdownMenuItem onClick={() => handleHideUser(u.user_id)}>
+                                <Eye className="w-4 h-4 mr-2" />
+                                Hide from Discovery
+                              </DropdownMenuItem>
+                            ) : (
+                              <DropdownMenuItem onClick={() => handleUnhideUser(u.user_id)}>
+                                <Eye className="w-4 h-4 mr-2" />
+                                Show in Discovery
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreVertical className="w-4 h-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleBanUser(u.user_id)}>
-                            <Ban className="w-4 h-4 mr-2" />
-                            Ban User
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -472,12 +689,12 @@ const AdminDashboard = () => {
           <TabsContent value="reports">
             <Card>
               <CardHeader>
-                <CardTitle>Active Reports</CardTitle>
+                <CardTitle>Pending Reports</CardTitle>
               </CardHeader>
               <CardContent>
                 {reports.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
-                    No active reports
+                    No pending reports
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -486,43 +703,36 @@ const AdminDashboard = () => {
                         key={report.id}
                         className="p-4 rounded-xl border border-border"
                       >
-                        <div className="flex items-start justify-between mb-2">
-                          <Badge variant="outline">{report.reason}</Badge>
-                          <span className="text-xs text-muted-foreground">
-                            {format(new Date(report.created_at), "MMM d, yyyy")}
-                          </span>
+                        <div className="flex items-start justify-between mb-4">
+                          <div>
+                            <Badge variant="destructive">{report.reason}</Badge>
+                            <p className="text-sm text-muted-foreground mt-2">
+                              Reported on {format(new Date(report.created_at), "MMM d, yyyy 'at' h:mm a")}
+                            </p>
+                          </div>
                         </div>
+                        
                         {report.description && (
-                          <p className="text-sm text-muted-foreground mb-4">
-                            {report.description}
+                          <p className="text-sm mb-4 p-3 bg-muted rounded-lg">
+                            "{report.description}"
                           </p>
                         )}
+
                         <div className="flex gap-2">
                           <Button
                             onClick={() => handleReportAction(report.id, "resolved")}
-                            size="sm"
-                            className="gap-2"
+                            className="flex-1 gap-2"
                           >
                             <Check className="w-4 h-4" />
                             Resolve
                           </Button>
                           <Button
                             onClick={() => handleReportAction(report.id, "dismissed")}
-                            size="sm"
                             variant="outline"
-                            className="gap-2"
+                            className="flex-1 gap-2"
                           >
                             <X className="w-4 h-4" />
                             Dismiss
-                          </Button>
-                          <Button
-                            onClick={() => handleBanUser(report.reported_user_id)}
-                            size="sm"
-                            variant="destructive"
-                            className="gap-2"
-                          >
-                            <Ban className="w-4 h-4" />
-                            Ban User
                           </Button>
                         </div>
                       </div>
@@ -534,6 +744,38 @@ const AdminDashboard = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Suspend User Dialog */}
+      <Dialog open={suspendDialogOpen} onOpenChange={setSuspendDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Suspend User</DialogTitle>
+            <DialogDescription>
+              Suspending {selectedUser?.display_name} will prevent them from swiping, 
+              sending messages, and posting to feeds. Their profile will also be hidden 
+              from other users.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Reason for suspension</label>
+              <Textarea
+                placeholder="e.g., Violated community guidelines, inappropriate behavior..."
+                value={suspensionReason}
+                onChange={(e) => setSuspensionReason(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSuspendDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleSuspendUser}>
+              Suspend User
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
