@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,8 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { signIn } from "@/lib/api";
 import { toast } from "sonner";
 import BexMatchLogo from "@/components/BexMatchLogo";
- import { lovable } from "@/integrations/lovable";
+import { lovable } from "@/integrations/lovable";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -18,6 +19,19 @@ const Login = () => {
   const [appleLoading, setAppleLoading] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { user, hasProfile, loading: authLoading } = useAuth();
+
+  // Redirect when user is authenticated
+  useEffect(() => {
+    if (!authLoading && user) {
+      const redirectTo = searchParams.get("redirect");
+      if (hasProfile) {
+        navigate(redirectTo || "/app", { replace: true });
+      } else {
+        navigate("/onboarding", { replace: true });
+      }
+    }
+  }, [user, hasProfile, authLoading, navigate, searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,10 +46,7 @@ const Login = () => {
     }
 
     toast.success("Welcome back!");
-    
-    // Check for redirect parameter (e.g., from pricing page)
-    const redirectTo = searchParams.get("redirect");
-    navigate(redirectTo || "/app");
+    // Navigation will happen via useEffect when auth state updates
   };
 
   const handleGoogleSignIn = async () => {
