@@ -76,7 +76,7 @@ const Onboarding = () => {
     
     // If user not logged in, redirect to signup
     if (!user) {
-      navigate("/signup", { replace: true });
+      navigate("/signin?redirect=/onboarding", { replace: true });
       return;
     }
 

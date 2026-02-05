@@ -3,6 +3,18 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { ProfileWithPhotos, getMyProfile } from '@/lib/api';
 
+async function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  let t: number | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    t = window.setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms);
+  });
+  try {
+    return await Promise.race([promise, timeout]);
+  } finally {
+    if (t) window.clearTimeout(t);
+  }
+}
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
@@ -26,7 +38,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const refreshProfile = async () => {
     setProfileLoading(true);
     try {
-      const { data, error } = await getMyProfile();
+      const { data, error } = await withTimeout(getMyProfile(), 8000, 'getMyProfile');
       if (error) {
         console.error('[auth] Failed to refresh profile', error);
         setProfile(null);
@@ -40,6 +52,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     let isMounted = true;
+    const initFailsafe = window.setTimeout(() => {
+      if (!isMounted) return;
+      console.warn('[auth] Initialization is taking too long; releasing the UI gate.');
+      setInitializing(false);
+    }, 12000);
     
     // FIRST check for existing session
     (async () => {
@@ -62,6 +79,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(null);
         setProfile(null);
       } finally {
+        window.clearTimeout(initFailsafe);
         if (isMounted) setInitializing(false);
       }
     })();
@@ -70,6 +88,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
         if (!isMounted) return;
+        console.debug('[auth] onAuthStateChange', event, { hasSession: !!currentSession });
         
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
