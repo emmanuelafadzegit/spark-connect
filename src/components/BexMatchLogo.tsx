@@ -1,4 +1,5 @@
 import logoImage from "@/assets/logo.png";
+import { forwardRef } from "react";
 
 interface BexMatchLogoProps {
   size?: "sm" | "md" | "lg" | "xl";
@@ -20,19 +21,23 @@ const textSizeClasses = {
   xl: "text-3xl",
 };
 
-const BexMatchLogo = ({ size = "md", showText = true, className = "" }: BexMatchLogoProps) => {
-  return (
-    <div className={`flex items-center gap-2 ${className}`}>
-      <img 
-        src={logoImage} 
-        alt="BexMatch" 
-        className={`${sizeClasses[size]} object-contain`}
-      />
-      {showText && (
-        <span className={`${textSizeClasses[size]} font-bold`}>BexMatch</span>
-      )}
-    </div>
-  );
-};
+const BexMatchLogo = forwardRef<HTMLDivElement, BexMatchLogoProps>(
+  ({ size = "md", showText = true, className = "" }, ref) => {
+    return (
+      <div ref={ref} className={`flex items-center gap-2 ${className}`}>
+        <img
+          src={logoImage}
+          alt="BexMatch"
+          className={`${sizeClasses[size]} object-contain`}
+        />
+        {showText && (
+          <span className={`${textSizeClasses[size]} font-bold`}>BexMatch</span>
+        )}
+      </div>
+    );
+  },
+);
+
+BexMatchLogo.displayName = "BexMatchLogo";
 
 export default BexMatchLogo;
