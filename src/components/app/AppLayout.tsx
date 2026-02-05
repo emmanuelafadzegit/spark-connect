@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { signOut } from "@/lib/api";
 import { toast } from "sonner";
 import BexMatchLogo from "@/components/BexMatchLogo";
+import AdminInbox from "@/components/app/AdminInbox";
 
 const AppLayout = () => {
   const navigate = useNavigate();
@@ -28,12 +29,15 @@ const AppLayout = () => {
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-lg border-b border-border">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <BexMatchLogo size="sm" />
-          <button
-            onClick={handleSignOut}
-            className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-          >
-            <LogOut className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <AdminInbox />
+            <button
+              onClick={handleSignOut}
+              className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
+          </div>
         </div>
       </header>
 

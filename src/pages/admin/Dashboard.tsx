@@ -3,10 +3,11 @@ import { motion } from "framer-motion";
 import { 
   Users, ShieldCheck, Crown, AlertTriangle, TrendingUp, 
   Check, X, Eye, MessageSquare, Ban, MoreVertical, Search,
-  RefreshCw, UserX, UserCheck, ArrowLeft, Calendar, Filter
+  RefreshCw, UserX, UserCheck, ArrowLeft, Calendar, Filter,
+  Send, Mail, Megaphone, Bell
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { 
@@ -26,6 +27,14 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -87,6 +96,20 @@ const AdminDashboard = () => {
   const [selectedUser, setSelectedUser] = useState<UserRow | null>(null);
   const [suspensionReason, setSuspensionReason] = useState("");
 
+  // Message dialog
+  const [messageDialogOpen, setMessageDialogOpen] = useState(false);
+  const [messageRecipient, setMessageRecipient] = useState<UserRow | null>(null);
+  const [messageSubject, setMessageSubject] = useState("");
+  const [messageContent, setMessageContent] = useState("");
+  const [sendingMessage, setSendingMessage] = useState(false);
+
+  // Broadcast dialog
+  const [broadcastDialogOpen, setBroadcastDialogOpen] = useState(false);
+  const [broadcastTitle, setBroadcastTitle] = useState("");
+  const [broadcastContent, setBroadcastContent] = useState("");
+  const [broadcastTier, setBroadcastTier] = useState("all");
+  const [sendingBroadcast, setSendingBroadcast] = useState(false);
+
   useEffect(() => {
     checkAdminAndLoad();
   }, [user]);
@@ -98,7 +121,6 @@ const AdminDashboard = () => {
   const filterUsers = () => {
     let filtered = [...users];
     
-    // Apply search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(u => 
@@ -107,7 +129,6 @@ const AdminDashboard = () => {
       );
     }
     
-    // Apply status filter
     switch (userFilter) {
       case "suspended":
         filtered = filtered.filter(u => u.is_suspended);
@@ -125,7 +146,7 @@ const AdminDashboard = () => {
 
   const checkAdminAndLoad = async () => {
     if (!user) {
-      navigate("/login");
+      navigate("/signin");
       return;
     }
 
@@ -320,6 +341,74 @@ const AdminDashboard = () => {
     loadDashboardData();
   };
 
+  // Admin messaging functions
+  const openMessageDialog = (userRow: UserRow) => {
+    setMessageRecipient(userRow);
+    setMessageSubject("");
+    setMessageContent("");
+    setMessageDialogOpen(true);
+  };
+
+  const handleSendMessage = async () => {
+    if (!messageRecipient || !messageContent.trim()) {
+      toast.error("Please enter a message");
+      return;
+    }
+
+    setSendingMessage(true);
+    try {
+      const { error } = await supabase
+        .from("admin_messages")
+        .insert({
+          admin_id: user?.id,
+          recipient_id: messageRecipient.user_id,
+          subject: messageSubject || "Message from BexMatch Team",
+          content: messageContent,
+        });
+
+      if (error) throw error;
+
+      toast.success(`Message sent to ${messageRecipient.display_name}`);
+      setMessageDialogOpen(false);
+      setMessageRecipient(null);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to send message");
+    } finally {
+      setSendingMessage(false);
+    }
+  };
+
+  const handleSendBroadcast = async () => {
+    if (!broadcastTitle.trim() || !broadcastContent.trim()) {
+      toast.error("Please enter a title and content");
+      return;
+    }
+
+    setSendingBroadcast(true);
+    try {
+      const { error } = await supabase
+        .from("admin_announcements")
+        .insert({
+          admin_id: user?.id,
+          title: broadcastTitle,
+          content: broadcastContent,
+          target_tier: broadcastTier,
+        });
+
+      if (error) throw error;
+
+      toast.success("Announcement broadcast successfully!");
+      setBroadcastDialogOpen(false);
+      setBroadcastTitle("");
+      setBroadcastContent("");
+      setBroadcastTier("all");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to send broadcast");
+    } finally {
+      setSendingBroadcast(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -354,10 +443,16 @@ const AdminDashboard = () => {
               <p className="text-muted-foreground">Manage users, verifications, and reports</p>
             </div>
           </div>
-          <Button variant="outline" onClick={loadDashboardData} className="gap-2">
-            <RefreshCw className="w-4 h-4" />
-            Refresh
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => setBroadcastDialogOpen(true)} className="gap-2">
+              <Megaphone className="w-4 h-4" />
+              Broadcast
+            </Button>
+            <Button variant="outline" onClick={loadDashboardData} className="gap-2">
+              <RefreshCw className="w-4 h-4" />
+              Refresh
+            </Button>
+          </div>
         </div>
 
         {/* Stats Grid */}
@@ -439,6 +534,10 @@ const AdminDashboard = () => {
                   {stats.activeReports}
                 </Badge>
               ) : null}
+            </TabsTrigger>
+            <TabsTrigger value="messaging">
+              <Mail className="w-4 h-4 mr-2" />
+              Messaging
             </TabsTrigger>
           </TabsList>
 
@@ -548,6 +647,11 @@ const AdminDashboard = () => {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => openMessageDialog(u)}>
+                              <Send className="w-4 h-4 mr-2" />
+                              Send Message
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
                             {u.is_suspended ? (
                               <DropdownMenuItem onClick={() => handleUnsuspendUser(u.user_id)}>
                                 <UserCheck className="w-4 h-4 mr-2" />
@@ -742,6 +846,62 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Messaging Tab */}
+          <TabsContent value="messaging">
+            <div className="grid gap-6 md:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Send className="w-5 h-5" />
+                    Direct Messages
+                  </CardTitle>
+                  <CardDescription>
+                    Send messages directly to individual users
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Use the user list on the "All Users" tab to send direct messages. 
+                    Click the menu (⋮) on any user and select "Send Message".
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setActiveTab("overview")}
+                    className="gap-2"
+                  >
+                    <Users className="w-4 h-4" />
+                    Go to Users
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Megaphone className="w-5 h-5" />
+                    Broadcast Announcements
+                  </CardTitle>
+                  <CardDescription>
+                    Send announcements to all or specific user tiers
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Create announcements that appear in users' feeds or notification areas.
+                    Target all users or specific subscription tiers.
+                  </p>
+                  <Button 
+                    onClick={() => setBroadcastDialogOpen(true)}
+                    className="gap-2"
+                  >
+                    <Megaphone className="w-4 h-4" />
+                    Create Announcement
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
         </Tabs>
       </div>
 
@@ -772,6 +932,118 @@ const AdminDashboard = () => {
             </Button>
             <Button variant="destructive" onClick={handleSuspendUser}>
               Suspend User
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Send Message Dialog */}
+      <Dialog open={messageDialogOpen} onOpenChange={setMessageDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Send Message to {messageRecipient?.display_name}</DialogTitle>
+            <DialogDescription>
+              This message will appear in the user's inbox from the BexMatch team.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Subject (optional)</Label>
+              <Input
+                placeholder="Message from BexMatch Team"
+                value={messageSubject}
+                onChange={(e) => setMessageSubject(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Message</Label>
+              <Textarea
+                placeholder="Type your message here..."
+                value={messageContent}
+                onChange={(e) => setMessageContent(e.target.value)}
+                rows={5}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setMessageDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSendMessage} disabled={sendingMessage} className="gap-2">
+              {sendingMessage ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4" />
+                  Send Message
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Broadcast Dialog */}
+      <Dialog open={broadcastDialogOpen} onOpenChange={setBroadcastDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create Announcement</DialogTitle>
+            <DialogDescription>
+              This announcement will be visible to users in the app.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Title</Label>
+              <Input
+                placeholder="Announcement title..."
+                value={broadcastTitle}
+                onChange={(e) => setBroadcastTitle(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Content</Label>
+              <Textarea
+                placeholder="Write your announcement..."
+                value={broadcastContent}
+                onChange={(e) => setBroadcastContent(e.target.value)}
+                rows={5}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Target Audience</Label>
+              <Select value={broadcastTier} onValueChange={setBroadcastTier}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Users</SelectItem>
+                  <SelectItem value="free">Free Users Only</SelectItem>
+                  <SelectItem value="premium">Premium Users Only</SelectItem>
+                  <SelectItem value="premium_plus">Premium Plus Only</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBroadcastDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSendBroadcast} disabled={sendingBroadcast} className="gap-2">
+              {sendingBroadcast ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  Broadcasting...
+                </>
+              ) : (
+                <>
+                  <Megaphone className="w-4 h-4" />
+                  Broadcast
+                </>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
