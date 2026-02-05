@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, forwardRef } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,7 @@ import BexMatchLogo from "@/components/BexMatchLogo";
 import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/contexts/AuthContext";
 
-const Login = () => {
+const Login = forwardRef<HTMLDivElement>((_, ref) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -19,34 +19,36 @@ const Login = () => {
   const [appleLoading, setAppleLoading] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user, hasProfile, loading: authLoading } = useAuth();
+  const { user } = useAuth();
 
-  // Redirect when user is authenticated
+  // If the user is already signed in, never keep them on /login.
   useEffect(() => {
-    if (!authLoading && user) {
+    if (user) {
       const redirectTo = searchParams.get("redirect");
-      if (hasProfile) {
-        navigate(redirectTo || "/app", { replace: true });
-      } else {
-        navigate("/onboarding", { replace: true });
-      }
+      navigate(redirectTo || "/app", { replace: true });
     }
-  }, [user, hasProfile, authLoading, navigate, searchParams]);
+  }, [user, navigate, searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await signIn(email, password);
+    try {
+      const { error } = await signIn(email, password);
 
-    if (error) {
-      toast.error(error.message || "Failed to sign in");
+      if (error) {
+        toast.error(error.message || "Failed to sign in");
+        return;
+      }
+
+      toast.success("Welcome back! Redirecting…");
+      const redirectTo = searchParams.get("redirect");
+      // Navigate immediately; route guards will handle onboarding vs app.
+      navigate(redirectTo || "/app", { replace: true });
+    } finally {
+      // Never let the UI get stuck in an infinite "Signing in..." state.
       setLoading(false);
-      return;
     }
-
-    toast.success("Welcome back!");
-    // Navigation will happen via useEffect when auth state updates
   };
 
   const handleGoogleSignIn = async () => {
@@ -72,7 +74,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-secondary via-background to-secondary/50 p-4">
+    <div ref={ref} className="min-h-screen flex items-center justify-center bg-gradient-to-br from-secondary via-background to-secondary/50 p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -211,6 +213,8 @@ const Login = () => {
       </motion.div>
     </div>
   );
-};
+});
+
+Login.displayName = "Login";
 
 export default Login;
