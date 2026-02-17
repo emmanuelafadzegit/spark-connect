@@ -233,7 +233,17 @@ export const getDiscoverProfiles = async (limit = 10) => {
     .select('swiped_id')
     .eq('swiper_id', user.id);
 
-  const excludeIds = [user.id, ...(swipedIds?.map(s => s.swiped_id) || [])];
+  // Also exclude admin users from discovery
+  const { data: adminIds } = await supabase
+    .from('user_roles')
+    .select('user_id')
+    .eq('role', 'admin');
+
+  const excludeIds = [
+    user.id,
+    ...(swipedIds?.map(s => s.swiped_id) || []),
+    ...(adminIds?.map(a => a.user_id) || []),
+  ];
 
   const { data, error } = await supabase
     .from('profiles')
