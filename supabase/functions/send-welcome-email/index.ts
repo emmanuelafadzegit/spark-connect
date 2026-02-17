@@ -67,7 +67,7 @@ const handler = async (req: Request): Promise<Response> => {
                   </div>
                   
                   <div style="text-align: center; margin: 30px 0;">
-                    <a href="https://matchlychat.lovable.app/app" 
+                    <a href="https://bexmatch.com/app" 
                        style="display: inline-block; background: linear-gradient(135deg, #ec4899, #f43f5e); color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
                       Start Matching →
                     </a>

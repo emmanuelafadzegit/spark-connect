@@ -11,7 +11,7 @@ const Privacy = () => {
       <SEOHelmet 
         title="Privacy Policy"
         description="Read BexMatch's Privacy Policy. Learn how we collect, use, and protect your personal information on our dating platform."
-        url="https://matchlychat.lovable.app/privacy"
+        url="https://bexmatch.com/privacy"
       />
       
       {/* Header */}
