@@ -11,7 +11,7 @@ const Terms = () => {
       <SEOHelmet 
         title="Terms of Service"
         description="Read the Terms of Service for BexMatch dating app. Understand your rights and responsibilities when using our platform."
-        url="https://matchlychat.lovable.app/terms"
+        url="https://bexmatch.com/terms"
       />
       
       {/* Header */}
