@@ -9,7 +9,7 @@ interface BexMatchLogoProps {
 
 const sizeClasses = {
   sm: "w-8 h-8",
-  md: "w-10 h-10", 
+  md: "w-10 h-10",
   lg: "w-12 h-12",
   xl: "w-16 h-16",
 };
@@ -24,14 +24,16 @@ const textSizeClasses = {
 const BexMatchLogo = forwardRef<HTMLDivElement, BexMatchLogoProps>(
   ({ size = "md", showText = true, className = "" }, ref) => {
     return (
-      <div ref={ref} className={`flex items-center gap-2 ${className}`}>
+      <div ref={ref} className={`flex items-center gap-2.5 ${className}`}>
         <img
           src={logoImage}
           alt="BexMatch"
           className={`${sizeClasses[size]} object-contain`}
         />
         {showText && (
-          <span className={`${textSizeClasses[size]} font-bold`}>BexMatch</span>
+          <span className={`${textSizeClasses[size]} font-extrabold tracking-tight`}>
+            Bex<span className="text-gradient-primary">Match</span>
+          </span>
         )}
       </div>
     );

@@ -3,25 +3,21 @@ import { UserPlus, Heart, MessageCircle, Sparkles } from "lucide-react";
 
 const steps = [
   {
-    number: "01",
     icon: UserPlus,
     title: "Create Your Profile",
-    description: "Sign up and create a stunning profile that showcases the real you.",
+    description: "Sign up and build a profile that showcases the real you.",
   },
   {
-    number: "02",
     icon: Heart,
     title: "Discover Matches",
-    description: "Swipe through profiles and like the ones that catch your eye.",
+    description: "Swipe through curated profiles and like the ones that resonate.",
   },
   {
-    number: "03",
     icon: Sparkles,
     title: "It's a Match!",
-    description: "When you both like each other, it's a match made in heaven.",
+    description: "When you both like each other, the magic begins.",
   },
   {
-    number: "04",
     icon: MessageCircle,
     title: "Start Chatting",
     description: "Break the ice and start a conversation that could change your life.",
@@ -30,49 +26,53 @@ const steps = [
 
 const HowItWorksSection = () => {
   return (
-    <section className="py-24 bg-background">
-      <div className="container mx-auto px-4">
+    <section className="py-24 sm:py-32 bg-background relative overflow-hidden">
+      {/* Subtle background accent */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-primary/3 blur-3xl pointer-events-none" />
+
+      <div className="container mx-auto px-4 sm:px-6 relative">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          className="text-center mb-14 sm:mb-20"
         >
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            How It <span className="text-gradient-primary">Works</span>
+          <span className="inline-block text-xs font-semibold tracking-[0.2em] uppercase text-primary mb-4">How it works</span>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-5">
+            Four Simple <span className="text-gradient-primary">Steps</span>
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Finding love has never been easier. Follow these simple steps to start your journey.
+          <p className="text-base sm:text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
+            Finding love has never been easier. Follow these steps to start your journey.
           </p>
         </motion.div>
 
         <div className="relative max-w-5xl mx-auto">
-          {/* Connection line */}
-          <div className="hidden lg:block absolute top-24 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+          {/* Connection line — desktop */}
+          <div className="hidden lg:block absolute top-[3.75rem] left-[10%] right-[10%] h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-6">
             {steps.map((step, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.15, duration: 0.5 }}
-                className="relative text-center"
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ delay: index * 0.12, duration: 0.5 }}
+                className="relative text-center group"
               >
-                {/* Step number badge */}
+                {/* Icon circle */}
                 <div className="relative inline-block mb-6">
-                  <div className="w-20 h-20 rounded-full bg-gradient-primary flex items-center justify-center shadow-primary-lg">
-                    <step.icon className="w-8 h-8 text-primary-foreground" />
+                  <div className="w-[4.5rem] h-[4.5rem] rounded-full bg-gradient-primary flex items-center justify-center shadow-primary-md group-hover:shadow-glow transition-shadow duration-500">
+                    <step.icon className="w-7 h-7 text-primary-foreground" />
                   </div>
-                  <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-card shadow-md flex items-center justify-center">
-                    <span className="text-xs font-bold text-primary">{step.number}</span>
+                  <div className="absolute -top-1.5 -right-1.5 w-7 h-7 rounded-full bg-card shadow-xs border border-border flex items-center justify-center">
+                    <span className="text-[10px] font-extrabold text-primary">{String(index + 1).padStart(2, '0')}</span>
                   </div>
                 </div>
 
-                <h3 className="text-xl font-semibold mb-3">{step.title}</h3>
-                <p className="text-muted-foreground">{step.description}</p>
+                <h3 className="text-lg font-bold mb-2">{step.title}</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed max-w-[220px] mx-auto">{step.description}</p>
               </motion.div>
             ))}
           </div>
