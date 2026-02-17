@@ -209,11 +209,11 @@ const Safety = () => {
                 If you've experienced harassment or abuse on BexMatch, please report it immediately.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button variant="destructive">
-                  Report an Issue
+                <Button variant="destructive" asChild>
+                  <Link to="/report">Report an Issue</Link>
                 </Button>
-                <Button variant="outline">
-                  Contact Support
+                <Button variant="outline" asChild>
+                  <Link to="/contact">Contact Support</Link>
                 </Button>
               </div>
             </motion.div>
