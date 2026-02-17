@@ -31,6 +31,8 @@ import SubscriptionCallback from "./pages/app/SubscriptionCallback";
 import FaceVerification from "./pages/app/FaceVerification";
 import Consumables from "./pages/app/Consumables";
 import AdminDashboard from "./pages/admin/Dashboard";
+import ReportIssue from "./pages/ReportIssue";
+import ContactSupport from "./pages/ContactSupport";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -77,6 +79,8 @@ const App = () => (
               <Route path="/pricing" element={<Pricing />} />
               <Route path="/safety" element={<Safety />} />
               <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/report" element={<ReportIssue />} />
+              <Route path="/contact" element={<ContactSupport />} />
 
               {/* App routes */}
               <Route

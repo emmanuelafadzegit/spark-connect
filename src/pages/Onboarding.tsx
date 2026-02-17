@@ -204,8 +204,10 @@ const Onboarding = () => {
         is_profile_complete: true,
       };
 
-      const { error: profileError } = await createProfile(profileData);
+      const { data: createdProfile, error: profileError } = await createProfile(profileData);
       if (profileError) throw profileError;
+
+      const profileId = createdProfile?.id;
 
       // Upload photos
       for (let i = 0; i < photoFiles.length; i++) {
@@ -216,9 +218,9 @@ const Onboarding = () => {
         }
       }
 
-      // Save interests
-      if (selectedInterests.length > 0) {
-        await updateProfileInterests(selectedInterests);
+      // Save interests using the profile ID directly
+      if (selectedInterests.length > 0 && profileId) {
+        await updateProfileInterests(selectedInterests, profileId);
       }
 
       await refreshProfile();

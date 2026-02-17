@@ -427,22 +427,26 @@ export const getInterests = async () => {
   return { data: data || [], error };
 };
 
-export const updateProfileInterests = async (interestIds: string[]) => {
-  const { data: profile } = await getMyProfile();
-  if (!profile) return { error: new Error('Profile not found') };
+export const updateProfileInterests = async (interestIds: string[], profileId?: string) => {
+  let pid = profileId;
+  if (!pid) {
+    const { data: profile } = await getMyProfile();
+    if (!profile) return { error: new Error('Profile not found') };
+    pid = profile.id;
+  }
 
   // Delete existing interests
   await supabase
     .from('profile_interests')
     .delete()
-    .eq('profile_id', profile.id);
+    .eq('profile_id', pid);
 
   // Insert new interests
   if (interestIds.length > 0) {
     const { error } = await supabase
       .from('profile_interests')
       .insert(interestIds.map(id => ({
-        profile_id: profile.id,
+        profile_id: pid!,
         interest_id: id,
       })));
 

@@ -129,6 +129,27 @@ const Settings = () => {
           </div>
         </section>
 
+        {/* Support */}
+        <section>
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Support</h2>
+          <div className="bg-card rounded-2xl divide-y divide-border">
+            <Link to="/report" className="flex items-center justify-between p-4 hover:bg-muted/50">
+              <div className="flex items-center gap-3">
+                <Shield className="w-5 h-5 text-muted-foreground" />
+                <span>Report an Issue</span>
+              </div>
+              <ChevronRight className="w-5 h-5 text-muted-foreground" />
+            </Link>
+            <Link to="/contact" className="flex items-center justify-between p-4 hover:bg-muted/50">
+              <div className="flex items-center gap-3">
+                <Globe className="w-5 h-5 text-muted-foreground" />
+                <span>Contact Support</span>
+              </div>
+              <ChevronRight className="w-5 h-5 text-muted-foreground" />
+            </Link>
+          </div>
+        </section>
+
         {/* Legal */}
         <section>
           <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Legal</h2>
