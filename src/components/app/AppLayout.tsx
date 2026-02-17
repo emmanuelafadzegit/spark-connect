@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
-import { MessageCircle, User, Flame, LogOut, Grid3X3, Heart } from "lucide-react";
+import { MessageCircle, User, Flame, LogOut, Compass, Heart } from "lucide-react";
 import { motion } from "framer-motion";
 import { signOut } from "@/lib/api";
 import { toast } from "sonner";
@@ -8,8 +8,7 @@ import AdminInbox from "@/components/app/AdminInbox";
 
 const navItems = [
   { to: "/app", icon: Flame, label: "Discover", end: true },
-  { to: "/app/feeds", icon: Grid3X3, label: "Feeds" },
-  { to: "/app/matches", icon: Heart, label: "Matches" },
+  { to: "/app/explore", icon: Compass, label: "Explore" },
   { to: "/app/messages", icon: MessageCircle, label: "Messages" },
   { to: "/app/profile", icon: User, label: "Profile" },
 ];
