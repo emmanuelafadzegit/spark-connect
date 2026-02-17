@@ -231,11 +231,11 @@ const Explore = () => {
       </motion.div>
 
       {/* New Post FAB */}
-      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+      <motion.div whileTap={{ scale: 0.92 }}>
         <Button
-          onClick={() => setShowNewPost(true)}
-          className="fixed bottom-20 right-4 z-40 w-14 h-14 rounded-full shadow-lg bg-gradient-primary"
-        >
+  onClick={() => setShowNewPost(true)}
+  className="fixed bottom-24 right-4 z-[60] w-14 h-14 rounded-full shadow-lg bg-gradient-primary"
+>
           <Plus className="w-6 h-6" />
         </Button>
       </motion.div>
@@ -244,20 +244,30 @@ const Explore = () => {
       <AnimatePresence>
         {showNewPost && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/50 flex items-end justify-center"
-            onClick={() => setShowNewPost(false)}
-          >
+  initial={{ opacity: 0 }}
+  animate={{ opacity: 1 }}
+  exit={{ opacity: 0 }}
+  className="fixed inset-0 z-[70] bg-black/50 flex items-end justify-center"
+  onClick={() => setShowNewPost(false)}
+>
             <motion.div
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 25 }}
-              onClick={e => e.stopPropagation()}
-              className="bg-background w-full max-w-lg rounded-t-3xl p-6"
-            >
+  initial={{ y: "100%" }}
+  animate={{ y: 0 }}
+  exit={{ y: "100%" }}
+  transition={{ type: "spring", damping: 25 }}
+  onClick={e => e.stopPropagation()}
+  className="
+    bg-background 
+    w-full 
+    max-w-lg 
+    rounded-t-3xl 
+    p-6 
+    max-h-[85vh] 
+    overflow-y-auto
+    pb-24
+    safe-bottom
+  "
+>
               <div className="w-12 h-1 rounded-full bg-muted mx-auto mb-4" />
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-bold">Create Post</h3>
