@@ -154,12 +154,24 @@ const Signup = () => {
               </div>
             </div>
 
-            <p className="text-[11px] text-muted-foreground leading-relaxed">
-              By signing up, you agree to our{" "}
-              <Link to="/terms" className="text-primary hover:underline">Terms</Link>
-              {" "}and{" "}
-              <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>.
-            </p>
+            <div className="space-y-2">
+              <label className="flex items-start gap-2.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  required
+                  className="mt-1 w-4 h-4 rounded border-border text-primary focus:ring-primary"
+                />
+                <span className="text-[11px] text-muted-foreground leading-relaxed">
+                  I agree to the{" "}
+                  <Link to="/terms" className="text-primary hover:underline font-medium">Terms & Conditions</Link>
+                  {" "}and{" "}
+                  <Link to="/privacy" className="text-primary hover:underline font-medium">Privacy Policy</Link>.
+                </span>
+              </label>
+              <p className="text-[10px] text-muted-foreground/80 leading-relaxed pl-6">
+                🔒 Keep your password secret. Never share it with anyone, including BexMatch staff.
+              </p>
+            </div>
 
             <Button type="submit" variant="hero" size="lg" className="w-full rounded-xl" disabled={anyLoading}>
               {loading ? (
